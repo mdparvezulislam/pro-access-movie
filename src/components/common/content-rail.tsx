@@ -54,7 +54,7 @@ export function ContentRail({ title, subtitle, items = [] }: ContentRailProps) {
                     {item.title}
                   </h3>
                   <p className="text-xs text-text-secondary mt-1">
-                    {item.releaseYear ?? "2026"} • {item.genres[0] ?? "Drama"}
+                    {item.releaseYear ?? "2026"} • {item.genres?.[0] || (item.type === "movie" ? "Movie" : "Series")}
                   </p>
                 </div>
               </div>
