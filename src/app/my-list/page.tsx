@@ -32,7 +32,7 @@ export default async function MyListPage() {
 
         {displayItems.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {displayItems.map((item: any) => (
+            {displayItems.map((item: { id: string; title: string; titleBn?: string | null; title_bn?: string | null; slug: string; type?: "movie" | "series"; posterUrl?: string | null; releaseYear?: number | null; release_year?: number | null; rating?: number | null }) => (
               <PosterCard
                 key={item.id}
                 id={item.id}
@@ -40,7 +40,7 @@ export default async function MyListPage() {
                 titleBn={item.titleBn || item.title_bn}
                 slug={item.slug}
                 type={item.type || "movie"}
-                posterUrl={item.posterUrl}
+                posterUrl={item.posterUrl || undefined}
                 releaseYear={item.releaseYear || item.release_year}
                 rating={item.rating}
                 badgeText="SAVED"

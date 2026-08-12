@@ -698,54 +698,75 @@ export interface Database {
       media_files: {
         Row: {
           id: string
-          bucket: "flex-posters" | "flex-backdrops" | "flex-people" | "flex-trailers"
+          bucket: string
           path: string
+          filename: string
           original_name: string
           mime_type: string
           size_bytes: number
           width: number | null
           height: number | null
-          content_type: "poster" | "backdrop" | "photo" | "trailer"
+          duration_seconds: number | null
+          content_type: string
+          folder: string
+          alt_text: string | null
+          title: string | null
+          access_strategy: string
+          public_url: string | null
           movie_id: string | null
           series_id: string | null
           person_id: string | null
-          status: "active" | "archived"
+          status: string
           created_by: string | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
-          bucket: "flex-posters" | "flex-backdrops" | "flex-people" | "flex-trailers"
+          bucket: string
           path: string
+          filename?: string
           original_name: string
           mime_type: string
           size_bytes: number
           width?: number | null
           height?: number | null
-          content_type: "poster" | "backdrop" | "photo" | "trailer"
+          duration_seconds?: number | null
+          content_type: string
+          folder?: string
+          alt_text?: string | null
+          title?: string | null
+          access_strategy?: string
+          public_url?: string | null
           movie_id?: string | null
           series_id?: string | null
           person_id?: string | null
-          status?: "active" | "archived"
+          status?: string
           created_by?: string | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
-          bucket?: "flex-posters" | "flex-backdrops" | "flex-people" | "flex-trailers"
+          bucket?: string
           path?: string
+          filename?: string
           original_name?: string
           mime_type?: string
           size_bytes?: number
           width?: number | null
           height?: number | null
-          content_type?: "poster" | "backdrop" | "photo" | "trailer"
+          duration_seconds?: number | null
+          content_type?: string
+          folder?: string
+          alt_text?: string | null
+          title?: string | null
+          access_strategy?: string
+          public_url?: string | null
           movie_id?: string | null
           series_id?: string | null
           person_id?: string | null
-          status?: "active" | "archived"
+          status?: string
           created_by?: string | null
           created_at?: string
           updated_at?: string

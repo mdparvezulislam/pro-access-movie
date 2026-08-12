@@ -1,7 +1,6 @@
 import "server-only";
 import { createServerClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/features/auth/lib/auth-helpers";
-import { profileSchema, type ProfileInput } from "@/lib/validation/auth";
 
 export interface ProfileView {
   displayName: string | null;

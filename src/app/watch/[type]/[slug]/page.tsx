@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Radio, Film, Star, Calendar, Clock, Info, ShieldCheck, Layers, Play } from "lucide-react";
+import { ArrowLeft, Star, Calendar, ShieldCheck, Layers } from "lucide-react";
 
 import { getMovieBySlug, getRelatedMovies } from "@/lib/content/movies";
 import { getSeriesBySlug, getSeriesSeasonsAndEpisodes } from "@/lib/content/series";
@@ -8,7 +8,7 @@ import { getPlaybackSourcesForMovie, getPlaybackSourcesForEpisode, PlaybackSourc
 import { FlexPlayer } from "@/components/player/flex-player";
 import { updateWatchProgressAction } from "@/features/user/lib/history";
 import { PosterCard } from "@/components/cards/poster-card";
-import { Button } from "@/components/ui/button";
+import { ContentItemSummary } from "@/types/content";
 
 export default async function WatchPage({
   params,
@@ -27,8 +27,8 @@ export default async function WatchPage({
   let contentId = "";
   let contentKind: "movie" | "episode" = "movie";
   let sources: PlaybackSource[] = [];
-  let related: any[] = [];
-  let seriesEpisodes: any[] = [];
+  let related: ContentItemSummary[] = [];
+  let seriesEpisodes: { id: string; episode_number: number; title: string; title_bn?: string | null; duration_minutes?: number | null }[] = [];
 
   if (type === "movie") {
     const movie = await getMovieBySlug(slug);
@@ -39,7 +39,7 @@ export default async function WatchPage({
     synopsisBn = movie.description_bn;
     releaseYear = movie.release_year || 2023;
     rating = movie.rating || 8.8;
-    isBengali = (movie as any).isBengali ?? true;
+    isBengali = Boolean(movie.title_bn);
     contentId = movie.id;
     contentKind = "movie";
     sources = await getPlaybackSourcesForMovie(movie.id);
@@ -55,7 +55,7 @@ export default async function WatchPage({
     synopsisBn = series.description_bn;
     releaseYear = series.release_year || 2022;
     rating = series.rating || 9.2;
-    isBengali = (series as any).isBengali ?? true;
+    isBengali = Boolean(series.title_bn);
 
     if (targetEp) {
       contentId = targetEp.id;
@@ -185,7 +185,7 @@ export default async function WatchPage({
                     <span>Season 1 Episodes</span>
                   </h3>
                   <div className="space-y-2">
-                    {seriesEpisodes.map((ep: any) => (
+                    {seriesEpisodes.map((ep: { id: string; episode_number: number; title: string; title_bn?: string | null; duration_minutes?: number | null }) => (
                       <div
                         key={ep.id}
                         className="p-3 rounded-xl bg-neutral-900 border border-white/10 flex items-center justify-between text-xs"
@@ -247,7 +247,7 @@ export default async function WatchPage({
                     titleBn={rel.titleBn}
                     slug={rel.slug}
                     type="movie"
-                    posterUrl={rel.posterUrl}
+                    posterUrl={rel.posterUrl || undefined}
                     releaseYear={rel.releaseYear}
                     rating={rel.rating}
                   />

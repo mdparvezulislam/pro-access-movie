@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Sparkles, Tv, Flame, Clapperboard, Star, Compass, Award, Heart, Clock } from "lucide-react";
+import { Sparkles, Tv, Flame, Clapperboard, Compass, Award, Heart, Clock } from "lucide-react";
 
 import { Navbar } from "@/components/common/navbar";
 import { HeroBanner } from "@/components/common/hero-banner";
@@ -41,7 +41,7 @@ export default async function HomePage() {
     : undefined;
 
   const top10 = movies.slice(0, 10);
-  const banglaMovies = movies.filter((m) => (m as any).isBengali ?? true);
+  const banglaMovies = movies.filter((m) => Boolean(m.title_bn));
   const trendingMovies = movies.filter((m) => (m.rating || 0) >= 8.5);
   const topRatedMovies = [...movies].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 10);
   const recentlyAdded = [...movies].sort((a, b) => (b.release_year || 2024) - (a.release_year || 2024)).slice(0, 10);
@@ -204,7 +204,7 @@ export default async function HomePage() {
                   titleBn={series.title_bn}
                   slug={series.slug}
                   type="series"
-                  posterUrl={(series as any).posterUrl || (series.media as any)?.posterUrl || "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop"}
+                  posterUrl={(series as { posterUrl?: string }).posterUrl || "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop"}
                   releaseYear={series.release_year}
                   rating={series.rating}
                   badgeText="SERIES"

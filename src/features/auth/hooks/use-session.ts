@@ -8,6 +8,7 @@ export interface UserProfileData {
   display_name: string | null;
   avatar_url: string | null;
   language_preference: string;
+  role?: string | null;
 }
 
 export function useSession() {
@@ -50,7 +51,7 @@ export function useSession() {
       try {
         const { data, error } = await supabase
           .from("profiles")
-          .select("display_name, avatar_url, language_preference")
+          .select("display_name, avatar_url, language_preference, role")
           .eq("id", userId)
           .maybeSingle();
 
@@ -64,6 +65,9 @@ export function useSession() {
 
         if (!error && data) {
           setProfile(data as UserProfileData);
+          if (data.role === "admin" || data.role === "super_admin") {
+            isRpcAdmin = true;
+          }
         }
         setIsAdmin(isRpcAdmin);
       } catch (err) {

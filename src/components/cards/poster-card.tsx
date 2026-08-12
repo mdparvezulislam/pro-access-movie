@@ -9,7 +9,7 @@ export interface PosterCardProps {
   titleBn?: string | null;
   slug: string;
   type: "movie" | "series";
-  posterUrl: string;
+  posterUrl?: string | null;
   backdropUrl?: string | null;
   releaseYear?: number | null;
   rating?: number | null;
@@ -40,7 +40,7 @@ export function PosterCard({
       <div className="aspect-[2/3] w-full overflow-hidden bg-surface-base relative">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={posterUrl}
+          src={posterUrl || "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600"}
           alt={title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"

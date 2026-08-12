@@ -82,9 +82,21 @@ export async function checkIsAdmin(userId: string): Promise<boolean> {
   });
 
   if (!rpcError && typeof isRpcAdmin === "boolean") {
-    return isRpcAdmin;
+    if (isRpcAdmin) return true;
   }
 
+  // Fallback 1: Check profiles table role column
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (profile?.role === "admin" || profile?.role === "super_admin") {
+    return true;
+  }
+
+  // Fallback 2: Check user_roles table
   const roleCodes = await getUserRoleCodes(userId);
   return roleCodes.some((code) => (ROLE_HIERARCHY[code as RoleCode] ?? 0) >= ROLE_HIERARCHY.admin);
 }

@@ -60,19 +60,34 @@ async function seedAdmin() {
 
   console.log(`✅ Admin User ID: ${userId}`);
 
-  // 2. Insert or update admin role in public.user_roles
+  // 2. Insert or update admin profile & role in public.profiles and public.user_roles
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .upsert({
+      id: userId,
+      display_name: "PRO ACCESS Admin",
+      role: "admin",
+      language_preference: "en",
+      theme_preference: "dark",
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "id" });
+
+  if (profileError) {
+    console.error(`⚠️ Profile update notice: ${profileError.message}`);
+  }
+
   const { error: roleError } = await supabase
     .from("user_roles")
     .upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id,role" });
 
   if (roleError) {
-    console.error(`❌ Failed to grant admin role: ${roleError.message}`);
+    console.error(`❌ Failed to grant admin role in user_roles: ${roleError.message}`);
     process.exit(1);
   }
 
-  console.log(`🎉 Admin account successfully seeded!`);
-  console.log(`   Email: ${adminEmail}`);
-  console.log(`   Role: admin`);
+  console.log(`🎉 Admin account successfully assigned admin role!`);
+  console.log(`   User ID: ${userId}`);
+  console.log(`   Role: admin (public.profiles & public.user_roles)`);
 }
 
 seedAdmin().catch((err) => {

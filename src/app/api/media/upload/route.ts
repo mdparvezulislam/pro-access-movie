@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser, checkIsAdmin } from "@/features/auth/lib/auth-helpers";
-import { uploadMediaFile, getSignedMediaUrl, FlexBucket, MediaContentType } from "@/lib/media/storage";
+import { uploadMediaFile, getSignedMediaUrl, FlexBucket, MediaContentType, MediaFolder } from "@/lib/media/storage";
 
 const ALLOWED_IMAGE_MIMES = ["image/jpeg", "image/png", "image/webp"];
 const ALLOWED_TRAILER_MIMES = ["video/mp4", "video/webm"];
@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
     const record = await uploadMediaFile(buffer, {
       bucket: parsed.data.bucket as FlexBucket,
       contentType: parsed.data.mediaType as MediaContentType,
+      folder: (parsed.data.contentKind === "person" ? "people" : parsed.data.contentKind) as MediaFolder,
       originalName: file.name,
       mimeType,
       sizeBytes,

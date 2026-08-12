@@ -24,7 +24,7 @@ export default async function SeriesPage() {
 
         {/* Series Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {seriesList.map((s: any) => (
+          {seriesList.map((s: (typeof seriesList)[number]) => (
             <PosterCard
               key={s.id}
               id={s.id}
@@ -32,7 +32,7 @@ export default async function SeriesPage() {
               titleBn={s.title_bn}
               slug={s.slug}
               type="series"
-              posterUrl={s.posterUrl || s.media?.posterUrl || "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop"}
+              posterUrl={(s as { posterUrl?: string }).posterUrl || "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop"}
               releaseYear={s.release_year}
               rating={s.rating}
               badgeText="SERIES"

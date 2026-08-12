@@ -1,16 +1,19 @@
+import React from "react";
 import { requireAdminAuth } from "@/features/auth/lib/auth-helpers";
-import { AdminPageShell } from "@/components/admin/admin-page-shell";
-import { Bot } from "lucide-react";
+import { AIStudioOverview } from "@/components/admin/ai/AIStudioOverview";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "AI Enrichment Studio | Admin | PRO ACCESS MOVIE",
+  description: "OpenRouter AI Content Intelligence gateway, analytics, and usage logs.",
+};
 
 export default async function AdminAIPage() {
   await requireAdminAuth("/admin/ai");
 
   return (
-    <AdminPageShell
-      title="AI Enrichment Studio"
-      description="Central OpenRouter AI portal for automated Bengali localization, SEO metadata generation, and content classification."
-      icon={Bot}
-      actionLabel="Run AI Batch Jobs"
-    />
+    <div className="p-6 md:p-8">
+      <AIStudioOverview />
+    </div>
   );
 }

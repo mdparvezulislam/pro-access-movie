@@ -74,7 +74,20 @@ export async function middleware(request: NextRequest) {
     let hasAdminPermission = Boolean(isAdmin);
 
     if (!hasAdminPermission) {
-      // Fallback: own role rows only (RLS limits this to the caller's own roles).
+      // Fallback 1: Check profiles table role column
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileData?.role === "admin" || profileData?.role === "super_admin") {
+        hasAdminPermission = true;
+      }
+    }
+
+    if (!hasAdminPermission) {
+      // Fallback 2: own role rows from user_roles
       const { data: roleData } = await supabase
         .from("user_roles")
         .select("role")

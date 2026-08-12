@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Navbar } from "@/components/common/navbar";
 import { Footer } from "@/components/common/footer";
 import { getSeriesBySlug, getSeriesSeasonsAndEpisodes } from "@/lib/content/series";
-import { Play, Star, Calendar, Bookmark, Tv, Layers, Info, Film } from "lucide-react";
+import { Play, Star, Bookmark, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default async function SeriesDetailsPage({
@@ -18,10 +18,9 @@ export default async function SeriesDetailsPage({
     notFound();
   }
 
-  const { seasons, episodes } = await getSeriesSeasonsAndEpisodes(series.id);
+  const { episodes } = await getSeriesSeasonsAndEpisodes(series.id);
   const mediaObj = (series.media as Record<string, string>) || {};
-  const backdropUrl = (series as any).backdropUrl || mediaObj.backdropUrl || "https://images.unsplash.com/photo-1518676599626-5cd8c2d3f853?q=80&w=1600&auto=format&fit=crop";
-  const posterUrl = (series as any).posterUrl || mediaObj.posterUrl || "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop";
+  const backdropUrl = (series as { backdropUrl?: string }).backdropUrl || mediaObj.backdropUrl || "https://images.unsplash.com/photo-1518676599626-5cd8c2d3f853?q=80&w=1600&auto=format&fit=crop";
 
   const displayEpisodes = episodes.length > 0 ? episodes : [
     { id: "ep1", episode_number: 1, title: "The Cell", title_bn: "১৪৫ নম্বর সেল", description: "A locked cell is opened after 50 years to reveal a mysterious captive.", duration_minutes: 45 },

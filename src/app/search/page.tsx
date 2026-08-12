@@ -144,7 +144,7 @@ export default async function SearchPage({
           <div className="space-y-4 pt-4">
             <h2 className="text-base font-bold text-text-primary">Recommended Searches</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-              {suggestions.map((item: any) => (
+              {suggestions.map((item: { id: string; title: string; title_bn?: string | null; slug: string; posterUrl?: string; release_year?: number | null; rating?: number | null }) => (
                 <PosterCard
                   key={item.id}
                   id={item.id}
@@ -152,7 +152,7 @@ export default async function SearchPage({
                   titleBn={item.title_bn}
                   slug={item.slug}
                   type="movie"
-                  posterUrl={item.posterUrl}
+                  posterUrl={item.posterUrl || undefined}
                   releaseYear={item.release_year}
                   rating={item.rating}
                 />
