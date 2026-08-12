@@ -19,8 +19,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "FLEX — Watch Movies, Series & Bengali Originals",
-  description: "Bangladesh-focused streaming platform for movies, series, and exclusive Bengali content.",
+  title: {
+    default: "PRO ACCESS MOVIE — Premium Streaming Platform",
+    template: "%s | PRO ACCESS MOVIE",
+  },
+  description: "Bangladesh-focused premium streaming platform for movies, series, and exclusive content.",
+  metadataBase: new URL("https://proaccessmovie.com"),
+  keywords: ["streaming", "movies", "TV series", "Bengali cinema", "cinema", "PRO ACCESS MOVIE"],
 };
 
 export default function RootLayout({

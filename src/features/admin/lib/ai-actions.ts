@@ -19,7 +19,7 @@ export async function generateMetadataAction(title: string) {
     return { success: false, error: "Forbidden: Admin access required" };
   }
 
-  const prompt = `You are a film & media metadata specialist for FLEX, a Bangladesh streaming platform.
+  const prompt = `You are a film & media metadata specialist for PRO ACCESS MOVIE, a Bangladesh streaming platform.
 Generate structured metadata for the movie/series title: "${title}".
 Return strictly valid JSON matching this schema:
 {

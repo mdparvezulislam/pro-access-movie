@@ -45,7 +45,7 @@ function LoginForm() {
           <Lock className="h-6 w-6" />
         </div>
         <CardTitle className="text-2xl font-extrabold tracking-tight">
-          Sign In to FLEX
+          Sign In to PRO ACCESS MOVIE
         </CardTitle>
         <CardDescription className="text-xs text-text-secondary">
           Enter your email and password to access your profile
@@ -142,7 +142,7 @@ export default function LoginPage() {
             <Film className="h-4 w-4" />
           </div>
           <span className="font-extrabold text-xl text-white tracking-wider">
-            FLEX<span className="text-red-500">.</span>
+            PRO ACCESS MOVIE<span className="text-red-500">.</span>
           </span>
         </Link>
       </header>
@@ -154,7 +154,7 @@ export default function LoginPage() {
       </main>
 
       <footer className="py-4 text-xs text-text-muted text-center">
-        © {new Date().getFullYear()} FLEX Bangladesh. All rights reserved.
+        © {new Date().getFullYear()} PRO ACCESS MOVIE Bangladesh. All rights reserved.
       </footer>
     </div>
   );

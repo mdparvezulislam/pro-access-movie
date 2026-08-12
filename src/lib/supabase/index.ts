@@ -1,2 +1,3 @@
-export { createClient } from "./browser";
-export { createServerClient, createAdminClient } from "./server";
+export { createBrowserClient } from "./browser";
+export { createServerClient } from "./server";
+export { getSupabaseAdminClient } from "./admin";

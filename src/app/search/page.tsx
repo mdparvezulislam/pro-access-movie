@@ -126,7 +126,7 @@ export default async function SearchPage({
         ) : (
           <div className="p-12 text-center rounded-2xl bg-surface-base border border-border-muted space-y-2">
             <Search className="h-10 w-10 text-text-muted mx-auto" />
-            <p className="text-xs text-text-secondary">Type a query above to start searching FLEX catalog</p>
+            <p className="text-xs text-text-secondary">Type a query above to start searching PRO ACCESS MOVIE catalog</p>
           </div>
         )}
       </main>

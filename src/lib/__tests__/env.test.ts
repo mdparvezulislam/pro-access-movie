@@ -3,7 +3,7 @@ import { env } from "@/lib/env";
 
 describe("Environment Validation (env.ts)", () => {
   it("should provide default application name", () => {
-    expect(env.NEXT_PUBLIC_APP_NAME).toBe("FLEX");
+    expect(env.NEXT_PUBLIC_APP_NAME).toBe("PRO ACCESS MOVIE");
   });
 
   it("should contain default placeholder Supabase public URL", () => {

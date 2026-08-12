@@ -34,7 +34,7 @@ export default async function ProfilePage() {
                 {displayName}
               </CardTitle>
               <CardDescription className="text-xs text-text-secondary">
-                FLEX Member
+                PRO ACCESS MOVIE Member
               </CardDescription>
             </CardHeader>
           </Card>
@@ -66,7 +66,7 @@ export default async function ProfilePage() {
                   <ShieldCheck className="h-4 w-4 text-text-muted" />
                   <div>
                     <p className="text-text-muted">Account Status</p>
-                    <p className="font-semibold text-text-primary">FLEX Standard Access</p>
+                    <p className="font-semibold text-text-primary">PRO ACCESS MOVIE Standard Access</p>
                   </div>
                 </div>
                 <span className="px-2 py-0.5 rounded bg-red-950/80 border border-red-800 text-[10px] font-bold text-red-400">

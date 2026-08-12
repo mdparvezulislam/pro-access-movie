@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  /* Light Mode palette (intentionally designed) */
+  /* Light Mode palette (intentionally designed high-contrast UI) */
   --background: #f8fafc;
   --foreground: #0f172a;
 
@@ -33,13 +33,24 @@
   --ring: #e50914;
   --radius: 0.5rem;
 
+  --success: #16a34a;
+  --success-foreground: #ffffff;
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
+  --error: #dc2626;
+  --error-foreground: #ffffff;
+  --focus: #e50914;
+
+  --interactive-hover: rgba(15, 23, 42, 0.05);
+  --interactive-active: rgba(15, 23, 42, 0.1);
+
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --text-muted: #94a3b8;
 }
 
 .dark {
-  /* Dark streaming palette (default near-black) */
+  /* Dark streaming palette (cinematic near-black) */
   --background: #09090e;
   --foreground: #f3f3f6;
 
@@ -69,6 +80,17 @@
   --border-muted: #1a1a26;
   --input: #1a1a26;
   --ring: #e50914;
+
+  --success: #22c55e;
+  --success-foreground: #052e16;
+  --warning: #f59e0b;
+  --warning-foreground: #451a03;
+  --error: #ef4444;
+  --error-foreground: #ffffff;
+  --focus: #e50914;
+
+  --interactive-hover: rgba(255, 255, 255, 0.08);
+  --interactive-active: rgba(255, 255, 255, 0.15);
 
   --text-primary: #ffffff;
   --text-secondary: #a1a1b5;
@@ -108,6 +130,11 @@
   --color-border-muted: var(--border-muted);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-focus: var(--focus);
 
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);

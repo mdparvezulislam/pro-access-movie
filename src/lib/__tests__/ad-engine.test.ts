@@ -10,7 +10,7 @@ vi.mock("@/lib/supabase/server", () => ({
         data: [
           {
             id: "ad-1",
-            title: "FLEX Banner Ad",
+            title: "PRO ACCESS Banner Ad",
             type: "banner",
             media_url: "https://example.com/banner.jpg",
             destination_url: "https://flex.bd",
@@ -31,7 +31,7 @@ describe("AdEngine Service (ad-engine.ts)", () => {
   it("evaluates candidate ad for placement key", async () => {
     const result = await evaluateAd("home_hero_banner");
     expect(result.creative).not.toBeNull();
-    expect(result.creative?.title).toBe("FLEX Banner Ad");
+    expect(result.creative?.title).toBe("PRO ACCESS Banner Ad");
     expect(result.placement?.key).toBe("home_hero_banner");
   });
 });

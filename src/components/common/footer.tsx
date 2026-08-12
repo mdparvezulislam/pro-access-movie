@@ -10,30 +10,30 @@ export function Footer() {
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-red-600 text-white font-bold">
               <Film className="h-4 w-4" />
             </div>
-            <span className="font-extrabold text-lg text-white tracking-wider">
-              FLEX<span className="text-red-500">.</span>
+            <span className="font-extrabold text-base sm:text-lg text-text-primary tracking-tight">
+              PRO ACCESS <span className="text-red-500">MOVIE</span>
             </span>
           </div>
 
           <div className="flex flex-wrap gap-6 text-text-secondary">
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link href="#" className="hover:text-text-primary transition-colors">
               Terms of Use
             </Link>
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link href="#" className="hover:text-text-primary transition-colors">
               Privacy Policy
             </Link>
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link href="#" className="hover:text-text-primary transition-colors">
               Help Center
             </Link>
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link href="#" className="hover:text-text-primary transition-colors">
               Corporate Info
             </Link>
           </div>
         </div>
 
         <div className="border-t border-border-muted pt-6 flex flex-col sm:flex-row items-center justify-between text-text-muted">
-          <p>© {new Date().getFullYear()} FLEX Bangladesh. All rights reserved.</p>
-          <p className="mt-2 sm:mt-0 font-medium">Built for high-definition streaming</p>
+          <p>© {new Date().getFullYear()} PRO ACCESS MOVIE Bangladesh. All rights reserved.</p>
+          <p className="mt-2 sm:mt-0 font-medium">Built for high-definition Bangladesh streaming</p>
         </div>
       </div>
     </footer>

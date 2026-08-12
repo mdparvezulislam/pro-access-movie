@@ -21,7 +21,7 @@ interface HeroBannerProps {
 }
 
 export function HeroBanner({ item }: HeroBannerProps) {
-  const title = item?.title || "Welcome to FLEX.";
+  const title = item?.title || "Welcome to PRO ACCESS MOVIE";
   const titleBn = item?.titleBn;
   const description = item?.description || "Stream premium Bengali originals, classic cinema, and worldwide blockbusters with lightning-fast playback.";
   const backdropUrl = item?.backdropUrl || null;
@@ -48,7 +48,7 @@ export function HeroBanner({ item }: HeroBannerProps) {
       <div className="relative z-20 max-w-2xl space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-950/60 border border-red-800/40 text-red-400 text-xs font-semibold uppercase tracking-wider backdrop-blur-md">
           <Sparkles className="h-3.5 w-3.5 text-red-400" />
-          <span>FLEX Spotlight Original</span>
+          <span>PRO ACCESS Spotlight Original</span>
         </div>
 
         <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">

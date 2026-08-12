@@ -17,20 +17,20 @@ export interface PlaybackSource {
 const DEMO_FALLBACK_SOURCES: PlaybackSource[] = [
   {
     id: "demo-hls-1080p",
-    label: "FLEX CDN — Full HD (1080p)",
+    label: "PRO ACCESS CDN — Full HD (1080p)",
     quality: "1080p",
     url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
     format: "hls",
-    providerName: "FLEX FastCDN (Dhaka Edge)",
+    providerName: "PRO ACCESS FastCDN (Dhaka Edge)",
     priority: 1,
   },
   {
     id: "demo-mp4-720p",
-    label: "FLEX Mirror — HD (720p)",
+    label: "PRO ACCESS Mirror — HD (720p)",
     quality: "720p",
     url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     format: "mp4",
-    providerName: "FLEX Backup Mirror",
+    providerName: "PRO ACCESS Backup Mirror",
     priority: 2,
   },
 ];

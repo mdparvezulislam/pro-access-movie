@@ -18,7 +18,7 @@ export function MobileBottomNav() {
     { href: "/movies", label: "Movies", icon: Film },
     { href: "/series", label: "Series", icon: Tv },
     { href: "/search", label: "Search", icon: Search },
-    { href: "/watchlist", label: "My List", icon: Bookmark },
+    { href: "/my-list", label: "My List", icon: Bookmark },
   ];
 
   return (

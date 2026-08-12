@@ -57,7 +57,7 @@ export default function RegisterPage() {
             <Film className="h-4 w-4" />
           </div>
           <span className="font-extrabold text-xl text-white tracking-wider">
-            FLEX<span className="text-red-500">.</span>
+            PRO ACCESS MOVIE<span className="text-red-500">.</span>
           </span>
         </Link>
       </header>
@@ -69,10 +69,10 @@ export default function RegisterPage() {
               <User className="h-6 w-6" />
             </div>
             <CardTitle className="text-2xl font-extrabold tracking-tight">
-              Create FLEX Account
+              Create PRO ACCESS MOVIE Account
             </CardTitle>
             <CardDescription className="text-xs text-text-secondary">
-              Join FLEX to stream unlimited movies, series, and originals
+              Join PRO ACCESS MOVIE to stream unlimited movies, series, and originals
             </CardDescription>
           </CardHeader>
 
@@ -195,7 +195,7 @@ export default function RegisterPage() {
       </main>
 
       <footer className="py-4 text-xs text-text-muted text-center">
-        © {new Date().getFullYear()} FLEX Bangladesh. All rights reserved.
+        © {new Date().getFullYear()} PRO ACCESS MOVIE Bangladesh. All rights reserved.
       </footer>
     </div>
   );

@@ -35,7 +35,7 @@ export interface AdEvaluationResult {
 const DEFAULT_DEMO_ADS: Record<string, AdCreative> = {
   home_hero_banner: {
     id: "demo-ad-1",
-    title: "Stream Unlimited Bengali Hits on FLEX Premium",
+    title: "Stream Unlimited Bengali Hits on PRO ACCESS MOVIE",
     type: "banner",
     mediaUrl: "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=1200",
     destinationUrl: "/login",
@@ -43,7 +43,7 @@ const DEFAULT_DEMO_ADS: Record<string, AdCreative> = {
   },
   rail_interstitial_card: {
     id: "demo-ad-2",
-    title: "Download FLEX Mobile App for Android & iOS",
+    title: "Download PRO ACCESS MOVIE App for Android & iOS",
     type: "card",
     mediaUrl: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600",
     destinationUrl: "/",

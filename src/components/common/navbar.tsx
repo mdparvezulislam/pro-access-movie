@@ -34,13 +34,13 @@ export function Navbar() {
               <Film className="h-5 w-5" />
             </div>
             <div className="flex flex-col">
-              <span className="font-extrabold text-2xl tracking-wider text-text-primary">
-                FLEX<span className="text-red-500">.</span>
+              <span className="font-extrabold text-lg sm:text-xl tracking-tight text-text-primary">
+                PRO ACCESS <span className="text-red-500">MOVIE</span>
               </span>
             </div>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-text-secondary">
+          <nav className="hidden md:flex items-center gap-5 text-sm font-medium text-text-secondary">
             <Link
               href="/"
               className={pathname === "/" ? "text-text-primary font-bold" : "hover:text-text-primary transition-colors"}
@@ -66,14 +66,20 @@ export function Navbar() {
               Categories
             </Link>
             <Link
-              href="/watchlist"
-              className={pathname === "/watchlist" ? "text-text-primary font-bold" : "hover:text-text-primary transition-colors"}
+              href="/genres"
+              className={pathname === "/genres" ? "text-text-primary font-bold" : "hover:text-text-primary transition-colors"}
+            >
+              Genres
+            </Link>
+            <Link
+              href="/my-list"
+              className={pathname === "/my-list" || pathname === "/watchlist" ? "text-text-primary font-bold" : "hover:text-text-primary transition-colors"}
             >
               My List
             </Link>
             <Link
               href="/admin"
-              className="flex items-center gap-1 hover:text-red-400 transition-colors text-xs text-text-muted"
+              className="flex items-center gap-1 hover:text-red-400 transition-colors text-xs text-text-muted ml-2"
             >
               <ShieldAlert className="h-3.5 w-3.5" />
               Admin Studio

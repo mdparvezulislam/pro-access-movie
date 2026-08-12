@@ -1,3 +1,4 @@
+import "server-only";
 import { env } from "@/lib/env";
 
 export interface OpenRouterMessage {
@@ -17,12 +18,9 @@ export class OpenRouterGateway {
   private defaultModel: string;
 
   constructor() {
-    if (typeof window !== "undefined") {
-      throw new Error("OpenRouterGateway is server-only and cannot be instantiated in the browser.");
-    }
     this.apiKey = env.OPENROUTER_API_KEY || "";
     this.baseUrl = env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
-    this.defaultModel = env.OPENROUTER_MODEL || "google/gemini-2.5-flash";
+    this.defaultModel = env.OPENROUTER_MODEL || "anthropic/claude-3.5-sonnet";
   }
 
   public async chatCompletion(
@@ -34,9 +32,9 @@ export class OpenRouterGateway {
         titleBn: "ডেমো শিরোনাম",
         description: "Demo generated AI summary for streaming title.",
         descriptionBn: "স্ট্রিমিং কনটেন্টের জন্য ডেমো বাংলা সারাংশ।",
-        tagline: "Unleash Bengali Cinema",
+        tagline: "Unleash Premium Streaming",
         contentRating: "TV-MA",
-        searchKeywords: "hawa, surung, monpura, bangla, movie",
+        searchKeywords: "movie, series, bangla, cinema, streaming",
       });
     }
 
@@ -63,8 +61,8 @@ export class OpenRouterGateway {
       url: `${this.baseUrl}/chat/completions`,
       headers: {
         Authorization: `Bearer ${this.apiKey}`,
-        "HTTP-Referer": "https://flex-stream.bd",
-        "X-Title": "FLEX Streaming Platform",
+        "HTTP-Referer": "https://proaccessmovie.com",
+        "X-Title": "PRO ACCESS MOVIE",
         "Content-Type": "application/json",
       },
       body: {
