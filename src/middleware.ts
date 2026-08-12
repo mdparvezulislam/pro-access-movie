@@ -1,76 +1,105 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+// User routes that require authentication. Guests may continue browsing all public content.
+const PROTECTED_USER_ROUTES = [
+  "/profile",
+  "/my-list",
+  "/history",
+  "/continue-watching",
+  "/watchlist",
+];
+
+function isProtectedUserRoute(pathname: string) {
+  return PROTECTED_USER_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Protect /admin routes strictly
-  if (pathname.startsWith("/admin")) {
-    let response = NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
+  // Public content is never gated in middleware.
+  if (!pathname.startsWith("/admin") && !isProtectedUserRoute(pathname)) {
+    return NextResponse.next();
+  }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "https://placeholder-project.supabase.co";
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder.anon_key";
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    });
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    // 1. Unauthenticated -> redirect to /login with return URL
-    if (authError || !user) {
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("next", pathname);
-      return NextResponse.redirect(loginUrl);
+  if (!supabaseUrl || !supabaseAnonKey) {
+    // Never silently bypass route protection because of misconfiguration.
+    if (pathname.startsWith("/admin")) {
+      return NextResponse.redirect(new URL("/login", request.url));
     }
+    return response;
+  }
 
-    // 2. Authenticated -> Check admin role via is_admin RPC or user_roles query
-    const { data: isAdmin, error: rpcError } = await supabase.rpc("is_admin", {
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        response = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) =>
+          response.cookies.set(name, value, options)
+        );
+      },
+    },
+  });
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  // 1. Unauthenticated -> redirect to /login with return URL for a clean auth flow.
+  if (authError || !user) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("next", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // 2. Admin routes require the admin tier (admin or super_admin).
+  if (pathname.startsWith("/admin")) {
+    const { data: isAdmin } = await supabase.rpc("is_admin", {
       check_user_id: user.id,
     });
 
-    let hasAdminPermission = !rpcError && Boolean(isAdmin);
+    let hasAdminPermission = Boolean(isAdmin);
 
     if (!hasAdminPermission) {
-      // Fallback query if RPC unavailable
+      // Fallback: own role rows only (RLS limits this to the caller's own roles).
       const { data: roleData } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
-        .eq("role", "admin")
+        .in("role", ["admin", "super_admin"])
         .maybeSingle();
 
       hasAdminPermission = !!roleData;
     }
 
-    // 3. Non-admin -> redirect to homepage
     if (!hasAdminPermission) {
       return NextResponse.redirect(new URL("/", request.url));
     }
-
-    return response;
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/profile",
+    "/my-list",
+    "/history",
+    "/continue-watching",
+    "/watchlist",
+  ],
 };

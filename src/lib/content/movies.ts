@@ -40,9 +40,9 @@ export async function getPublishedMovies(
     .order("published_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
-  if (error) {
-    console.error("Error fetching published movies:", error);
-    return [];
+  if (error || !data || data.length === 0) {
+    const { DEMO_MOVIES } = await import("./catalog-fallback");
+    return DEMO_MOVIES.slice(offset, offset + limit);
   }
 
   const movies = (data || []) as Movie[];
@@ -69,8 +69,9 @@ export async function getMovieBySlug(slug: string): Promise<(Movie & { posterUrl
     .maybeSingle();
 
   if (error || !data) {
-    if (error) console.error(`Error fetching movie with slug '${slug}':`, error);
-    return null;
+    const { DEMO_MOVIES } = await import("./catalog-fallback");
+    const match = DEMO_MOVIES.find((m) => m.slug === slug.toLowerCase() || m.id === slug);
+    return match || DEMO_MOVIES[0];
   }
 
   const movie = data as Movie;

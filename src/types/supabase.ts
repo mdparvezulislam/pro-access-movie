@@ -138,6 +138,127 @@ export interface Database {
           updated_at?: string
         }
       }
+      roles: {
+        Row: {
+          code: string
+          name: string
+          description: string | null
+          hierarchy_level: number
+          created_at: string
+        }
+        Insert: {
+          code: string
+          name: string
+          description?: string | null
+          hierarchy_level: number
+          created_at?: string
+        }
+        Update: {
+          code?: string
+          name?: string
+          description?: string | null
+          hierarchy_level?: number
+          created_at?: string
+        }
+      }
+      permissions: {
+        Row: {
+          code: string
+          name: string
+          description: string | null
+          created_at: string
+        }
+        Insert: {
+          code: string
+          name: string
+          description?: string | null
+          created_at?: string
+        }
+        Update: {
+          code?: string
+          name?: string
+          description?: string | null
+          created_at?: string
+        }
+      }
+      role_permissions: {
+        Row: {
+          role_code: string
+          permission_code: string
+        }
+        Insert: {
+          role_code: string
+          permission_code: string
+        }
+        Update: {
+          role_code?: string
+          permission_code?: string
+        }
+      }
+      user_permissions: {
+        Row: {
+          id: string
+          user_id: string
+          permission_code: string
+          granted_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          permission_code: string
+          granted_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          permission_code?: string
+          granted_by?: string | null
+          created_at?: string
+        }
+      }
+      user_watch_progress: {
+        Row: {
+          id: string
+          user_id: string
+          movie_id: string | null
+          episode_id: string | null
+          progress_seconds: number
+          duration_seconds: number
+          playback_position_seconds: number
+          completed: boolean
+          playback_state: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          movie_id?: string | null
+          episode_id?: string | null
+          progress_seconds?: number
+          duration_seconds?: number
+          playback_position_seconds?: number
+          completed?: boolean
+          playback_state?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          movie_id?: string | null
+          episode_id?: string | null
+          progress_seconds?: number
+          duration_seconds?: number
+          playback_position_seconds?: number
+          completed?: boolean
+          playback_state?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
       movies: {
         Row: {
           id: string
@@ -531,6 +652,7 @@ export interface Database {
           display_name: string | null
           avatar_url: string | null
           language_preference: string
+          theme_preference: 'dark' | 'light'
           created_at: string
           updated_at: string
         }
@@ -539,6 +661,7 @@ export interface Database {
           display_name?: string | null
           avatar_url?: string | null
           language_preference?: string
+          theme_preference?: 'dark' | 'light'
           created_at?: string
           updated_at?: string
         }
@@ -547,6 +670,7 @@ export interface Database {
           display_name?: string | null
           avatar_url?: string | null
           language_preference?: string
+          theme_preference?: 'dark' | 'light'
           created_at?: string
           updated_at?: string
         }

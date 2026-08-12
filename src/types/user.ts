@@ -1,4 +1,6 @@
-export type UserRole = "admin" | "subscriber" | "guest";
+export type RoleCode = "user" | "editor" | "admin" | "super_admin";
+
+export type UserRole = RoleCode | "subscriber" | "guest";
 
 export interface UserProfile {
   id: string;
@@ -8,5 +10,6 @@ export interface UserProfile {
   role: UserRole;
   subscriptionTier?: "free" | "vip" | "premium";
   preferredLanguage: "bn" | "en";
+  themePreference?: "dark" | "light";
   createdAt: string;
 }

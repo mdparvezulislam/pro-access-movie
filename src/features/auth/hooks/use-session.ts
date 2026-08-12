@@ -14,6 +14,7 @@ export function useSession() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfileData | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -39,6 +40,7 @@ export function useSession() {
           fetchProfile(session.user.id);
         } else {
           setProfile(null);
+          setIsAdmin(false);
           setIsLoading(false);
         }
       }
@@ -52,9 +54,18 @@ export function useSession() {
           .eq("id", userId)
           .maybeSingle();
 
+        let isRpcAdmin = false;
+        try {
+          const res = await supabase.rpc("is_admin", { check_user_id: userId });
+          isRpcAdmin = Boolean(res.data);
+        } catch {
+          isRpcAdmin = false;
+        }
+
         if (!error && data) {
           setProfile(data as UserProfileData);
         }
+        setIsAdmin(isRpcAdmin);
       } catch (err) {
         console.error("Error fetching user profile:", err);
       } finally {
@@ -72,6 +83,7 @@ export function useSession() {
     user,
     profile,
     isAuthenticated: !!user,
+    isAdmin,
     isLoading,
   };
 }

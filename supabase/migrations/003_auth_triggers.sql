@@ -49,6 +49,11 @@ BEGIN
     avatar_url = COALESCE(public.profiles.avatar_url, EXCLUDED.avatar_url),
     updated_at = NOW();
 
+  -- Insert default user role in public.user_roles if not already assigned
+  INSERT INTO public.user_roles (user_id, role)
+  VALUES (NEW.id, 'user')
+  ON CONFLICT (user_id, role) DO NOTHING;
+
   RETURN NEW;
 END;
 $$;

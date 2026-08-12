@@ -13,7 +13,7 @@ import { useTheme } from "@/components/providers/theme-provider";
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated, user, profile, isLoading } = useSession();
+  const { isAuthenticated, user, profile, isAdmin, isLoading } = useSession();
   const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -77,13 +77,15 @@ export function Navbar() {
             >
               My List
             </Link>
-            <Link
-              href="/admin"
-              className="flex items-center gap-1 hover:text-red-400 transition-colors text-xs text-text-muted ml-2"
-            >
-              <ShieldAlert className="h-3.5 w-3.5" />
-              Admin Studio
-            </Link>
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="flex items-center gap-1 hover:text-red-400 transition-colors text-xs text-text-muted ml-2"
+              >
+                <ShieldAlert className="h-3.5 w-3.5" />
+                Admin Studio
+              </Link>
+            )}
           </nav>
         </div>
 

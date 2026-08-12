@@ -3,10 +3,13 @@ import { Navbar } from "@/components/common/navbar";
 import { Footer } from "@/components/common/footer";
 import { User, ShieldCheck, Mail, Calendar, Settings } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { ProfileSettings } from "@/features/user/components/profile-settings";
+import { getCurrentUserProfile } from "@/features/user/lib/profile";
 
 export default async function ProfilePage() {
   const user = await requireAuth("/profile");
   const displayName = user.user_metadata?.display_name || user.email?.split("@")[0] || "User";
+  const profile = await getCurrentUserProfile();
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -88,6 +91,8 @@ export default async function ProfilePage() {
             </CardContent>
           </Card>
         </div>
+
+        {profile && <ProfileSettings initialProfile={profile} />}
       </main>
 
       <Footer />
