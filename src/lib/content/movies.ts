@@ -16,13 +16,28 @@ export async function resolveMovieMediaUrls(movie: Movie): Promise<{
   backdropUrl: string;
 }> {
   const mediaObj = (movie.media as Record<string, string>) || {};
-  const rawPoster = mediaObj.posterPath || mediaObj.posterUrl || null;
-  const rawBackdrop = mediaObj.backdropPath || mediaObj.backdropUrl || null;
+  const rawMovie = movie as unknown as Record<string, string>;
+  const rawPoster = rawMovie.poster_url || mediaObj.posterUrl || mediaObj.posterPath || null;
+  const rawBackdrop = rawMovie.backdrop_url || mediaObj.backdropUrl || mediaObj.backdropPath || null;
 
-  const [posterUrl, backdropUrl] = await Promise.all([
-    getSignedMediaUrl(rawPoster, "flex-posters", 3600, "poster"),
-    getSignedMediaUrl(rawBackdrop, "flex-backdrops", 3600, "backdrop"),
-  ]);
+  let posterUrl = "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600";
+  let backdropUrl = "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=1200";
+
+  if (rawPoster) {
+    if (rawPoster.startsWith("http://") || rawPoster.startsWith("https://")) {
+      posterUrl = rawPoster;
+    } else {
+      posterUrl = await getSignedMediaUrl(rawPoster, "flex-posters", 3600, "poster");
+    }
+  }
+
+  if (rawBackdrop) {
+    if (rawBackdrop.startsWith("http://") || rawBackdrop.startsWith("https://")) {
+      backdropUrl = rawBackdrop;
+    } else {
+      backdropUrl = await getSignedMediaUrl(rawBackdrop, "flex-backdrops", 3600, "backdrop");
+    }
+  }
 
   return { posterUrl, backdropUrl };
 }
@@ -36,8 +51,7 @@ export async function getPublishedMovies(
   const { data, error } = await supabase
     .from("movies")
     .select("*")
-    .eq("status", "published")
-    .order("published_at", { ascending: false })
+    .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
   if (error || !data || data.length === 0) {
@@ -65,7 +79,6 @@ export async function getMovieBySlug(slug: string): Promise<(Movie & { posterUrl
     .from("movies")
     .select("*")
     .eq("slug", slug.toLowerCase())
-    .eq("status", "published")
     .maybeSingle();
 
   if (error || !data) {

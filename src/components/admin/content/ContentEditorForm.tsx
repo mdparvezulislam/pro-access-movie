@@ -11,6 +11,7 @@ import {
   Image as ImageIcon,
   ArrowLeft,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -166,10 +167,36 @@ export function ContentEditorForm({ id, type, initialData }: ContentEditorFormPr
         <div className="lg:col-span-8 space-y-6">
           {/* Main Info */}
           <div className="p-6 rounded-xl bg-surface-base border border-border space-y-4">
-            <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-2">
-              <FileText className="h-4 w-4 text-red-500" />
-              Primary Metadata
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-2">
+                <FileText className="h-4 w-4 text-red-500" />
+                Primary Content Information
+              </h3>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!title) return alert("Please enter a title first.");
+                  try {
+                    const res = await fetch("/api/admin/ai/generate", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ title, overview: description, operation: "generate_description" }),
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.data) {
+                      if (data.data.overviewEn && !description) setDescription(data.data.overviewEn);
+                      if (data.data.overviewBn && !descriptionBn) setDescriptionBn(data.data.overviewBn);
+                      if (data.data.titleBn && !titleBn) setTitleBn(data.data.titleBn);
+                    }
+                  } catch (err) {
+                    console.error("AI error:", err);
+                  }
+                }}
+                className="px-3 py-1 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20 text-xs font-bold flex items-center gap-1.5 hover:bg-purple-500/20 transition-colors"
+              >
+                <Sparkles className="h-3.5 w-3.5" /> AI Enrich Metadata
+              </button>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">

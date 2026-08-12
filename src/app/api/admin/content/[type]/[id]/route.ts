@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ type: string; id: string }> }
+  props: { params: Promise<Record<string, string>> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -17,7 +17,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
-    const { type, id } = await params;
+    const { type, id } = await props.params;
     if (type !== "movie" && type !== "series") {
       return NextResponse.json({ error: "Invalid content type" }, { status: 400 });
     }

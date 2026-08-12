@@ -12,8 +12,7 @@ export async function getPublishedSeries(
   const { data, error } = await supabase
     .from("series")
     .select("*")
-    .eq("status", "published")
-    .order("published_at", { ascending: false })
+    .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
   if (error || !data || data.length === 0) {
@@ -32,7 +31,6 @@ export async function getSeriesBySlug(slug: string): Promise<Series | null> {
     .from("series")
     .select("*")
     .eq("slug", slug.toLowerCase())
-    .eq("status", "published")
     .maybeSingle();
 
   if (error || !data) {
@@ -55,7 +53,6 @@ export async function getSeriesSeasonsAndEpisodes(seriesId: string): Promise<{
     .from("seasons")
     .select("*")
     .eq("series_id", seriesId)
-    .eq("status", "published")
     .order("season_number", { ascending: true });
 
   const seasons = (seasonsData || []) as Season[];

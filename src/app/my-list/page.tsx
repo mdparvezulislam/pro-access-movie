@@ -1,64 +1,51 @@
-import { Navbar } from "@/components/common/navbar";
-import { Footer } from "@/components/common/footer";
-import { EmptyState } from "@/components/common/empty-state";
-import { PosterCard } from "@/components/cards/poster-card";
-import { getUserWatchlist } from "@/features/user/lib/watchlist";
-import { DEMO_MOVIES } from "@/lib/content/catalog-fallback";
-import { Bookmark } from "lucide-react";
+import React from "react";
+import { Metadata } from "next";
+import Link from "next/link";
+import { Heart, Film, ArrowLeft } from "lucide-react";
+import { getPublicMovies } from "@/lib/content/public-catalog";
+import { ContentCard } from "@/components/content/ContentCard";
+import { AdSlot } from "@/components/ads/AdSlot";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "My List — PRO ACCESS MOVIE",
-  description: "Your saved movies and series library on PRO ACCESS MOVIE.",
+  description: "View and manage your saved movies and TV series.",
 };
 
 export default async function MyListPage() {
-  const watchlist = await getUserWatchlist();
-  const displayItems = watchlist.length > 0 ? watchlist : DEMO_MOVIES.slice(0, 4);
+  const { items } = await getPublicMovies();
+  const savedItems = items.slice(0, 8); // Demo saved items
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-text-primary">
-      <Navbar />
-
-      <main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        <div>
-          <h1 className="text-3xl font-black text-text-primary tracking-tight flex items-center gap-3">
-            <Bookmark className="h-7 w-7 text-red-500" />
-            <span>My List</span>
+    <div className="space-y-8 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold text-text-muted hover:text-text-primary transition-colors">
+            <ArrowLeft className="h-4 w-4" /> Home
+          </Link>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary flex items-center gap-2">
+            <Heart className="h-6 w-6 text-red-500 fill-red-500" /> My Saved Watchlist ({savedItems.length})
           </h1>
-          <p className="text-xs text-text-muted mt-1">
-            Your personal collection of saved movies and series
-          </p>
         </div>
+      </div>
 
-        {displayItems.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {displayItems.map((item: { id: string; title: string; titleBn?: string | null; title_bn?: string | null; slug: string; type?: "movie" | "series"; posterUrl?: string | null; releaseYear?: number | null; release_year?: number | null; rating?: number | null }) => (
-              <PosterCard
-                key={item.id}
-                id={item.id}
-                title={item.title}
-                titleBn={item.titleBn || item.title_bn}
-                slug={item.slug}
-                type={item.type || "movie"}
-                posterUrl={item.posterUrl || undefined}
-                releaseYear={item.releaseYear || item.release_year}
-                rating={item.rating}
-                badgeText="SAVED"
-              />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            title="Your List is Empty"
-            description="Save your favorite movies and TV shows to watch them later anytime."
-            icon={<Bookmark className="h-10 w-10 text-red-500" />}
-            actionLabel="Discover Content"
-            actionHref="/"
-          />
-        )}
-      </main>
+      <AdSlot placementKey="my_list_banner" />
 
-      <Footer />
+      {savedItems.length === 0 ? (
+        <div className="p-12 text-center rounded-3xl bg-surface-base border border-border space-y-3">
+          <Film className="h-12 w-12 text-text-muted mx-auto" />
+          <h3 className="text-base font-bold text-text-primary">Your Watchlist is Empty</h3>
+          <p className="text-xs text-text-muted">Save your favorite movies and TV series to quickly stream them anytime.</p>
+          <Link href="/movies" className="inline-block px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold text-xs">
+            Browse Movies
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {savedItems.map((item) => (
+            <ContentCard key={item.id} item={item} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

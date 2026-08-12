@@ -43,7 +43,7 @@ function validateRemoteUrl(urlStr: string): boolean {
  * Downloads a remote image URL and stores it using the Supabase Media Storage engine.
  * Includes SSRF validation, MIME verification, and safe fallback on storage error.
  */
-async function ingestRemoteMedia(
+async function _ingestRemoteMedia(
   url: string | undefined,
   folder: MediaFolder = "movie",
   contentType: "poster" | "backdrop" | "thumbnail" = "poster",
@@ -244,6 +244,9 @@ export async function importMovie(
     description_bn: data.overview_bn || null,
     rating: data.rating,
     content_rating: data.content_rating || "13+",
+    poster_url: posterUrl || null,
+    backdrop_url: backdropUrl || null,
+    logo_url: logoUrl || null,
     trailer_url: data.trailer_url || null,
     external_ids: (data.external_ids || {}) as Record<string, unknown>,
     media: mediaObj,
@@ -299,9 +302,7 @@ export async function importMovie(
     slug,
     status: targetStatus,
     isDuplicate: dupCheck.isDuplicate,
-    mediaCount: (posterPath ? 1 : 0) + (backdropPath ? 1 : 0),
-    media: mediaStatus,
-    warnings: warnings.length > 0 ? warnings : undefined,
+    mediaCount: (posterUrl ? 1 : 0) + (backdropUrl ? 1 : 0),
     message: dupCheck.isDuplicate
       ? `Updated existing movie "${data.title}" successfully.`
       : `Imported movie "${data.title}" as ${targetStatus}.`,
@@ -373,6 +374,9 @@ export async function importSeries(
     description_bn: data.overview_bn || null,
     rating: data.rating,
     content_rating: data.content_rating || "13+",
+    poster_url: posterUrl || null,
+    backdrop_url: backdropUrl || null,
+    logo_url: logoUrl || null,
     trailer_url: data.trailer_url || null,
     external_ids: (data.external_ids || {}) as Record<string, unknown>,
     media: mediaObj,

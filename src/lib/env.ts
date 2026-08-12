@@ -17,52 +17,32 @@ const clientSchema = z.object({
  * Environment variable access helper ensuring strict boundary separation
  * between public browser-safe variables and private server secrets.
  */
-function getEnv() {
-  const isServer = typeof window === "undefined";
-
-  const publicEnv = {
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "https://placeholder-project.supabase.co",
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder.anon_key",
-    NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || "PRO ACCESS MOVIE",
-  };
-
-  const parsedPublic = clientSchema.safeParse(publicEnv);
-  if (!parsedPublic.success) {
-    console.error("Invalid public environment variables:", parsedPublic.error.flatten().fieldErrors);
-    throw new Error("Invalid public environment variables");
-  }
-
-  if (!isServer) {
-    return {
-      ...parsedPublic.data,
-      SUPABASE_URL: parsedPublic.data.NEXT_PUBLIC_SUPABASE_URL,
-      SUPABASE_ANON_KEY: parsedPublic.data.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      SUPABASE_SERVICE_ROLE_KEY: undefined,
-      OPENROUTER_API_KEY: undefined,
-      OPENROUTER_MODEL: undefined,
-      OPENROUTER_BASE_URL: undefined,
-    };
-  }
-
-  const serverEnv = {
-    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder.service_role_key",
-    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || "sk-or-v1-placeholder-key",
-    OPENROUTER_MODEL: process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-sonnet",
-    OPENROUTER_BASE_URL: process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1",
-  };
-
-  const parsedServer = serverSchema.safeParse(serverEnv);
-  if (!parsedServer.success) {
-    console.error("Invalid server environment variables:", parsedServer.error.flatten().fieldErrors);
-    throw new Error("Invalid server environment variables");
-  }
-
-  return {
-    ...parsedPublic.data,
-    ...parsedServer.data,
-    SUPABASE_URL: parsedPublic.data.NEXT_PUBLIC_SUPABASE_URL,
-    SUPABASE_ANON_KEY: parsedPublic.data.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  };
-}
-
-export const env = getEnv();
+export const env = {
+  get NEXT_PUBLIC_SUPABASE_URL() {
+    return process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "https://bhgxjdfnnzthsnzzhssj.supabase.co";
+  },
+  get NEXT_PUBLIC_SUPABASE_ANON_KEY() {
+    return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test_anon_key";
+  },
+  get NEXT_PUBLIC_APP_NAME() {
+    return process.env.NEXT_PUBLIC_APP_NAME || "PRO ACCESS MOVIE";
+  },
+  get SUPABASE_SERVICE_ROLE_KEY() {
+    return process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+  },
+  get OPENROUTER_API_KEY() {
+    return process.env.OPENROUTER_API_KEY || "";
+  },
+  get OPENROUTER_MODEL() {
+    return process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-sonnet";
+  },
+  get OPENROUTER_BASE_URL() {
+    return process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
+  },
+  get SUPABASE_URL() {
+    return process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "https://bhgxjdfnnzthsnzzhssj.supabase.co";
+  },
+  get SUPABASE_ANON_KEY() {
+    return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || "";
+  },
+};
