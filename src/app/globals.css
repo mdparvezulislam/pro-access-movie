@@ -1,26 +1,138 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Dark streaming palette (default near-black) */
+  --background: #09090e;
+  --foreground: #f3f3f6;
+
+  /* Layered surface elevations */
+  --surface-base: #0f0f17;
+  --surface-raised: #161622;
+  --surface-overlay: #1e1e2d;
+  --surface-hover: #262638;
+
+  /* Cinematic Accent (Crimson Red / Pink family) */
+  --accent: #e50914;
+  --accent-hover: #f4121e;
+  --accent-muted: rgba(229, 9, 20, 0.15);
+
+  /* Card and dialog backgrounds for shadcn compatibility */
+  --card: #12121a;
+  --card-foreground: #f3f3f6;
+  --popover: #161622;
+  --popover-foreground: #f3f3f6;
+  --primary: #e50914;
+  --primary-foreground: #ffffff;
+  --secondary: #1e1e2d;
+  --secondary-foreground: #f3f3f6;
+  --muted: #161622;
+  --muted-foreground: #a1a1b5;
+  --destructive: #7f1d1d;
+  --destructive-foreground: #fef2f2;
+  
+  /* Borders and Rings */
+  --border: #232332;
+  --border-muted: #1a1a26;
+  --input: #1a1a26;
+  --ring: #e50914;
+  --radius: 0.5rem;
+
+  /* Text colors */
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1b5;
+  --text-muted: #67677d;
 }
 
-@theme inline {
+@theme {
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-bengali: var(--font-hind-siliguri), system-ui, sans-serif;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-surface-base: var(--surface-base);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-surface-hover: var(--surface-hover);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-muted: var(--accent-muted);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-border-muted: var(--border-muted);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    border-color: var(--border);
+    outline-color: var(--ring);
+  }
+
+  html {
+    color-scheme: dark;
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-inter), var(--font-hind-siliguri), sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
   }
 }
 
-body {
+/* Custom scrollbars for streaming horizontal rails */
+::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Glassmorphism utility classes */
+.glass-panel {
+  background: rgba(18, 18, 26, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-nav {
+  background: rgba(9, 9, 14, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }

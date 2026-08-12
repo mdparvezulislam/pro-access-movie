@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FLEX — Streaming Platform Architecture & Guidelines
 
-## Getting Started
+FLEX is a high-performance streaming platform built with **Next.js 16.3 (App Router)**, **React 19**, **TypeScript**, **Tailwind CSS v4**, **Supabase**, and **OpenRouter AI**.
 
-First, run the development server:
+---
+
+## 🚀 Quick Start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Install dependencies
+pnpm install
+
+# Run development server
 pnpm dev
-# or
-bun dev
+
+# Run quality checks & verification
+pnpm lint        # ESLint check
+pnpm typecheck   # TypeScript strict verification
+pnpm test        # Vitest smoke test suite
+pnpm build       # Production bundle build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠 Architectural Conventions
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Strict TypeScript**:
+   - `noImplicitAny` and strict null checks enforced.
+   - `any` is strictly prohibited unless accompanied by an explicit inline comment justification.
 
-## Learn More
+2. **Server Components First**:
+   - All pages and components default to React Server Components (RSC).
+   - Use `"use client"` sparingly—only for interactive elements (event handlers, state hooks).
+   - Keep page roots as pure Server Components.
 
-To learn more about Next.js, take a look at the following resources:
+3. **Feature Modularization (`src/features/*`)**:
+   - Domain logic belongs inside `src/features/<feature>/lib/`.
+   - Feature folders contain self-contained `components/`, `hooks/`, and `lib/`.
+   - Route handlers and server actions must remain thin and delegate to feature libraries.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. **Content State Machine**:
+   - Content records transition strictly through: `draft` → `review` → `published` → `archived`.
+   - Public components and RLS policies **MUST NEVER** read `draft` or `archived` items.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+5. **Input Validation**:
+   - All Server Actions, API routes, and forms must validate inputs using **Zod** schemas from `src/lib/validation/` or `src/features/*/lib/`.
 
-## Deploy on Vercel
+6. **Environment Boundary Protection**:
+   - `OPENROUTER_API_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are strictly server-only.
+   - Only `NEXT_PUBLIC_` prefixed variables may be accessed on the client.
+   - Env variables are validated at runtime via `src/lib/env.ts`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+7. **Database & Security**:
+   - RLS (Row Level Security) is the primary security boundary.
+   - Browser clients only execute queries allowed by Supabase RLS policies.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+8. **UI & Iconography**:
+   - Component primitives reside in `@/components/ui/` (shadcn).
+   - Iconography is restricted to **Lucide React** (`lucide-react`) exclusively.
+   - Framer Motion is reserved for functional state transitions and focus feedback only.
+
+---
+
+## 📂 Project Structure
+
+```
+src/
+├── app/            — App Router layout, pages, and route handlers
+├── components/
+│   ├── ui/         — shadcn primitive UI components
+│   └── common/     — Shared layout primitives (Navbar, Hero, ContentRail, Footer)
+├── features/       — Feature domains (auth, content, playback, ads, user, admin)
+├── lib/
+│   ├── ai/         — OpenRouter gateway configuration
+│   ├── supabase/   — Browser and Server client factories
+│   ├── validation/ — Zod validation schemas
+│   └── env.ts      — Runtime environment validator
+└── types/          — Shared domain types and lifecycle state enums
+supabase/           — DB migrations directory & environment reference
+```
