@@ -1,8 +1,5 @@
 import "server-only";
 import { createServerClient } from "@/lib/supabase/server";
-import { Database } from "@/types/supabase";
-
-export type PlaybackSourceRecord = Database["public"]["Tables"]["playback_sources"]["Row"];
 
 export interface PlaybackSource {
   id: string;
@@ -42,7 +39,7 @@ export async function getPlaybackSourcesForMovie(movieId: string): Promise<Playb
   const { data, error } = await supabase
     .from("playback_sources")
     .select("*")
-    .eq("movie_id", movieId)
+    .eq("content_id", movieId)
     .eq("is_active", true)
     .order("priority", { ascending: true });
 
@@ -50,14 +47,14 @@ export async function getPlaybackSourcesForMovie(movieId: string): Promise<Playb
     return DEMO_FALLBACK_SOURCES;
   }
 
-  return data.map((s) => ({
-    id: s.id,
-    label: s.label,
-    quality: s.quality,
-    url: s.url,
-    format: s.format,
-    providerName: s.provider_name,
-    priority: s.priority,
+  return data.map((s: Record<string, unknown>) => ({
+    id: String(s.id),
+    label: String(s.source_name || s.label || "Default Stream"),
+    quality: (s.quality as PlaybackSource["quality"]) || "1080p",
+    url: String(s.url),
+    format: String(s.url).includes(".m3u8") ? ("hls" as const) : ("mp4" as const),
+    providerName: String(s.source_name || "Fast CDN"),
+    priority: Number(s.priority || 1),
   }));
 }
 
@@ -68,7 +65,7 @@ export async function getPlaybackSourcesForEpisode(episodeId: string): Promise<P
   const { data, error } = await supabase
     .from("playback_sources")
     .select("*")
-    .eq("episode_id", episodeId)
+    .eq("content_id", episodeId)
     .eq("is_active", true)
     .order("priority", { ascending: true });
 
@@ -76,13 +73,13 @@ export async function getPlaybackSourcesForEpisode(episodeId: string): Promise<P
     return DEMO_FALLBACK_SOURCES;
   }
 
-  return data.map((s) => ({
-    id: s.id,
-    label: s.label,
-    quality: s.quality,
-    url: s.url,
-    format: s.format,
-    providerName: s.provider_name,
-    priority: s.priority,
+  return data.map((s: Record<string, unknown>) => ({
+    id: String(s.id),
+    label: String(s.source_name || s.label || "Default Stream"),
+    quality: (s.quality as PlaybackSource["quality"]) || "1080p",
+    url: String(s.url),
+    format: String(s.url).includes(".m3u8") ? ("hls" as const) : ("mp4" as const),
+    providerName: String(s.source_name || "Fast CDN"),
+    priority: Number(s.priority || 1),
   }));
 }

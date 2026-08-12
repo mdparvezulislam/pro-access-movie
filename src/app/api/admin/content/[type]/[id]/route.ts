@@ -67,3 +67,39 @@ export async function PATCH(
     );
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  props: { params: Promise<Record<string, string>> }
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
+    const isAdmin = await checkIsAdmin(user.id);
+    if (!isAdmin) {
+      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    }
+
+    const { type, id } = await props.params;
+    if (type !== "movie" && type !== "series") {
+      return NextResponse.json({ error: "Invalid content type" }, { status: 400 });
+    }
+
+    const table = type === "movie" ? "movies" : "series";
+    const supabase = await createAdminClient();
+
+    const { error } = await supabase.from(table).delete().eq("id", id);
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err: unknown) {
+    console.error("Error deleting content:", err);
+    const msg = err instanceof Error ? err.message : "Failed to delete content.";
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}

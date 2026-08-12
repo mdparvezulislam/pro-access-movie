@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkIsAdmin, getCurrentUser } from "@/features/auth/lib/auth-helpers";
-import { createServerClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const supabase = await createServerClient();
+    const supabase = await createAdminClient();
     const { data, error } = await supabase
       .from("download_sources")
       .select("*")
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createServerClient();
+    const supabase = await createAdminClient();
     const { data, error } = await supabase
       .from("download_sources")
       .insert({
@@ -107,6 +107,47 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PATCH(request: NextRequest) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
+    const isAdmin = await checkIsAdmin(user.id);
+    if (!isAdmin) {
+      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { id, ...updateFields } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: "Source ID is required for update." }, { status: 400 });
+    }
+
+    const supabase = await createAdminClient();
+    const { data, error } = await supabase
+      .from("download_sources")
+      .update({
+        ...updateFields,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, source: data });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to update download source.";
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const user = await getCurrentUser();
@@ -126,7 +167,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Download source ID required." }, { status: 400 });
     }
 
-    const supabase = await createServerClient();
+    const supabase = await createAdminClient();
     const { error } = await supabase.from("download_sources").delete().eq("id", id);
 
     if (error) {

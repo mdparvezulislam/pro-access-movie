@@ -58,6 +58,10 @@ export function ContentEditorForm({ id, type, initialData }: ContentEditorFormPr
   const [description, setDescription] = useState(initialData.description || "");
   const [descriptionBn, setDescriptionBn] = useState(initialData.description_bn || "");
 
+  // Tab & Unsaved Changes State
+  const [editorTab, setEditorTab] = useState<"overview" | "metadata" | "media" | "sources" | "publishing">("overview");
+  const [isDirty, setIsDirty] = useState(false);
+
   // Media picker values
   const [posterPath, setPosterPath] = useState(initialData.media?.posterPath || initialData.media?.posterUrl || "");
   const [backdropPath, setBackdropPath] = useState(initialData.media?.backdropPath || initialData.media?.backdropUrl || "");
@@ -96,6 +100,7 @@ export function ContentEditorForm({ id, type, initialData }: ContentEditorFormPr
       }
 
       setStatus(targetStatus);
+      setIsDirty(false);
       toast.success(
         publishImmediately
           ? `Successfully published "${title}"!`
@@ -135,6 +140,20 @@ export function ContentEditorForm({ id, type, initialData }: ContentEditorFormPr
         </div>
 
         <div className="flex items-center gap-2">
+          {isSaving ? (
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+              <Loader2 className="h-3 w-3 animate-spin" /> Saving...
+            </span>
+          ) : isDirty ? (
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/30 flex items-center gap-1">
+              Unsaved Changes
+            </span>
+          ) : (
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+              <CheckCircle2 className="h-3 w-3" /> Saved
+            </span>
+          )}
+
           <Button
             variant="outline"
             size="sm"
@@ -159,6 +178,30 @@ export function ContentEditorForm({ id, type, initialData }: ContentEditorFormPr
             </Button>
           )}
         </div>
+      </div>
+
+      {/* Editor Tabs Navigation Header */}
+      <div className="flex items-center gap-1 border-b border-border pb-3 overflow-x-auto">
+        {[
+          { id: "overview", label: "Overview & Text" },
+          { id: "metadata", label: "Metadata & Specs" },
+          { id: "media", label: "Media Assets" },
+          { id: "sources", label: "Streaming & Downloads" },
+          { id: "publishing", label: "Publishing Controls" },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setEditorTab(tab.id as typeof editorTab)}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors whitespace-nowrap ${
+              editorTab === tab.id
+                ? "bg-red-600 text-white shadow-lg"
+                : "bg-surface-base text-text-muted hover:text-text-primary hover:bg-surface-raised"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Editor Grid */}
