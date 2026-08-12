@@ -10,6 +10,13 @@ FLEX is a high-performance streaming platform built with **Next.js 16.3 (App Rou
 # Install dependencies
 pnpm install
 
+# Local Supabase Database Setup
+pnpm exec supabase start         # Start local Supabase containers
+pnpm exec supabase db push        # Apply all SQL migrations
+
+# Admin Seeding (Requires local Supabase or configured .env.local)
+pnpm seed:admin                   # Seeds admin@flex.bd with admin role
+
 # Run development server
 pnpm dev
 
@@ -22,6 +29,26 @@ pnpm build       # Production bundle build
 
 ---
 
+## 🔐 Auth & Security Infrastructure (Phase 01)
+
+1. **Role System**:
+   - Roles are stored in `public.user_roles` (`admin`, `moderator`).
+   - `public.is_admin(user_id)` is a `SECURITY DEFINER` function checking user roles or service-role JWTs.
+   - `public.make_admin(target_user_id)` is callable only by existing admins or via service-role.
+
+2. **Middleware Route Protection (`src/middleware.ts`)**:
+   - All `/admin/**` routes are intercepted server-side.
+   - Requires a valid session AND `is_admin` RPC verification.
+   - Unauthenticated visitors are redirected to `/login?next=/admin`.
+   - Non-admin users are redirected to `/`.
+
+3. **Row Level Security (RLS)**:
+   - `public.profiles`: Readable by authenticated users; writable only by profile owners (`auth.uid() = id`).
+   - `public.user_roles`: Readable by authenticated users; insert/delete restricted to admins.
+   - `public.app_settings`: Key/value store readable by authenticated users; writable only by admins.
+
+---
+
 ## 🛠 Architectural Conventions
 
 1. **Strict TypeScript**:
@@ -31,33 +58,15 @@ pnpm build       # Production bundle build
 2. **Server Components First**:
    - All pages and components default to React Server Components (RSC).
    - Use `"use client"` sparingly—only for interactive elements (event handlers, state hooks).
-   - Keep page roots as pure Server Components.
 
 3. **Feature Modularization (`src/features/*`)**:
    - Domain logic belongs inside `src/features/<feature>/lib/`.
    - Feature folders contain self-contained `components/`, `hooks/`, and `lib/`.
-   - Route handlers and server actions must remain thin and delegate to feature libraries.
 
-4. **Content State Machine**:
-   - Content records transition strictly through: `draft` → `review` → `published` → `archived`.
-   - Public components and RLS policies **MUST NEVER** read `draft` or `archived` items.
-
-5. **Input Validation**:
-   - All Server Actions, API routes, and forms must validate inputs using **Zod** schemas from `src/lib/validation/` or `src/features/*/lib/`.
-
-6. **Environment Boundary Protection**:
+4. **Environment Boundary Protection**:
    - `OPENROUTER_API_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are strictly server-only.
    - Only `NEXT_PUBLIC_` prefixed variables may be accessed on the client.
    - Env variables are validated at runtime via `src/lib/env.ts`.
-
-7. **Database & Security**:
-   - RLS (Row Level Security) is the primary security boundary.
-   - Browser clients only execute queries allowed by Supabase RLS policies.
-
-8. **UI & Iconography**:
-   - Component primitives reside in `@/components/ui/` (shadcn).
-   - Iconography is restricted to **Lucide React** (`lucide-react`) exclusively.
-   - Framer Motion is reserved for functional state transitions and focus feedback only.
 
 ---
 
@@ -65,16 +74,21 @@ pnpm build       # Production bundle build
 
 ```
 src/
-├── app/            — App Router layout, pages, and route handlers
+├── app/                  — App Router layout, pages, and global error boundaries
 ├── components/
-│   ├── ui/         — shadcn primitive UI components
-│   └── common/     — Shared layout primitives (Navbar, Hero, ContentRail, Footer)
-├── features/       — Feature domains (auth, content, playback, ads, user, admin)
+│   ├── ui/               — Primitive shadcn components
+│   ├── common/           — App shell components (Navbar, HeroBanner, ContentRail, Footer)
+│   └── providers/        — Client providers
+├── features/
+│   ├── auth/             — Auth Server Actions, session hooks, and role helpers
+│   └── content/          — Content feature submodules
 ├── lib/
-│   ├── ai/         — OpenRouter gateway configuration
-│   ├── supabase/   — Browser and Server client factories
-│   ├── validation/ — Zod validation schemas
-│   └── env.ts      — Runtime environment validator
-└── types/          — Shared domain types and lifecycle state enums
-supabase/           — DB migrations directory & environment reference
+│   ├── ai/               — OpenRouter gateway configuration
+│   ├── supabase/         — Browser and Server client factories
+│   ├── validation/       — Zod validation schemas
+│   └── env.ts            — Runtime environment validator
+└── middleware.ts         — Route protection middleware for /admin
+supabase/
+├── migrations/           — Idempotent SQL migrations (001 to 005)
+└── tests/                — RLS policy verification SQL scripts
 ```

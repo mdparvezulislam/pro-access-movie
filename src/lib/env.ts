@@ -14,15 +14,15 @@ const clientSchema = z.object({
 });
 
 /**
-  * Environment variable access helper ensuring strict boundary separation
-  * between public browser-safe variables and private server secrets.
-  */
+ * Environment variable access helper ensuring strict boundary separation
+ * between public browser-safe variables and private server secrets.
+ */
 function getEnv() {
   const isServer = typeof window === "undefined";
 
   const publicEnv = {
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder-project.supabase.co",
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder.anon_key",
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "https://placeholder-project.supabase.co",
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder.anon_key",
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || "FLEX",
   };
 
@@ -35,7 +35,8 @@ function getEnv() {
   if (!isServer) {
     return {
       ...parsedPublic.data,
-      // Disallow server key access on client
+      SUPABASE_URL: parsedPublic.data.NEXT_PUBLIC_SUPABASE_URL,
+      SUPABASE_ANON_KEY: parsedPublic.data.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       SUPABASE_SERVICE_ROLE_KEY: undefined,
       OPENROUTER_API_KEY: undefined,
       OPENROUTER_MODEL: undefined,
@@ -59,6 +60,8 @@ function getEnv() {
   return {
     ...parsedPublic.data,
     ...parsedServer.data,
+    SUPABASE_URL: parsedPublic.data.NEXT_PUBLIC_SUPABASE_URL,
+    SUPABASE_ANON_KEY: parsedPublic.data.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   };
 }
 
