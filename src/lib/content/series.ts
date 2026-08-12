@@ -1,10 +1,10 @@
 import "server-only";
 import { createServerClient } from "@/lib/supabase/server";
 import { Series, Season, Episode } from "@/types/content";
-import { PaginationInput, paginationSchema } from "./movies";
+import { paginationSchema } from "./movies";
 
 export async function getPublishedSeries(
-  pagination?: PaginationInput
+  pagination?: { limit?: number; offset?: number }
 ): Promise<Series[]> {
   const { limit, offset } = paginationSchema.parse(pagination || {});
   const supabase = await createServerClient();

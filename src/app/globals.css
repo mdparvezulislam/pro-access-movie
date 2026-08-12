@@ -1,22 +1,57 @@
 @import "tailwindcss";
 
 :root {
+  /* Light Mode palette (intentionally designed) */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+
+  --surface-base: #ffffff;
+  --surface-raised: #f1f5f9;
+  --surface-overlay: #e2e8f0;
+  --surface-hover: #cbd5e1;
+
+  --accent: #e50914;
+  --accent-hover: #dc2626;
+  --accent-muted: rgba(229, 9, 20, 0.1);
+
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #e50914;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  
+  --border: #e2e8f0;
+  --border-muted: #f1f5f9;
+  --input: #e2e8f0;
+  --ring: #e50914;
+  --radius: 0.5rem;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+}
+
+.dark {
   /* Dark streaming palette (default near-black) */
   --background: #09090e;
   --foreground: #f3f3f6;
 
-  /* Layered surface elevations */
   --surface-base: #0f0f17;
   --surface-raised: #161622;
   --surface-overlay: #1e1e2d;
   --surface-hover: #262638;
 
-  /* Cinematic Accent (Crimson Red / Pink family) */
   --accent: #e50914;
   --accent-hover: #f4121e;
   --accent-muted: rgba(229, 9, 20, 0.15);
 
-  /* Card and dialog backgrounds for shadcn compatibility */
   --card: #12121a;
   --card-foreground: #f3f3f6;
   --popover: #161622;
@@ -30,14 +65,11 @@
   --destructive: #7f1d1d;
   --destructive-foreground: #fef2f2;
   
-  /* Borders and Rings */
   --border: #232332;
   --border-muted: #1a1a26;
   --input: #1a1a26;
   --ring: #e50914;
-  --radius: 0.5rem;
 
-  /* Text colors */
   --text-primary: #ffffff;
   --text-secondary: #a1a1b5;
   --text-muted: #67677d;
@@ -89,7 +121,6 @@
   }
 
   html {
-    color-scheme: dark;
     background-color: var(--background);
     color: var(--foreground);
   }
@@ -124,15 +155,15 @@
 
 /* Glassmorphism utility classes */
 .glass-panel {
-  background: rgba(18, 18, 26, 0.75);
+  background: var(--card);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
 }
 
 .glass-nav {
-  background: rgba(9, 9, 14, 0.85);
+  background: var(--background);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border);
 }

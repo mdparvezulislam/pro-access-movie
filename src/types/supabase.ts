@@ -627,6 +627,242 @@ export interface Database {
           updated_at?: string
         }
       }
+      user_watchlist: {
+        Row: {
+          id: string
+          user_id: string
+          movie_id: string | null
+          series_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          movie_id?: string | null
+          series_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          movie_id?: string | null
+          series_id?: string | null
+          created_at?: string
+        }
+      }
+      user_watch_history: {
+        Row: {
+          id: string
+          user_id: string
+          movie_id: string | null
+          episode_id: string | null
+          progress_seconds: number
+          duration_seconds: number
+          completed: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          movie_id?: string | null
+          episode_id?: string | null
+          progress_seconds?: number
+          duration_seconds?: number
+          completed?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          movie_id?: string | null
+          episode_id?: string | null
+          progress_seconds?: number
+          duration_seconds?: number
+          completed?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      playback_sources: {
+        Row: {
+          id: string
+          movie_id: string | null
+          episode_id: string | null
+          label: string
+          quality: "1080p" | "720p" | "480p" | "360p" | "auto"
+          url: string
+          format: "hls" | "mp4" | "embed"
+          provider_name: string
+          priority: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          movie_id?: string | null
+          episode_id?: string | null
+          label: string
+          quality: "1080p" | "720p" | "480p" | "360p" | "auto"
+          url: string
+          format?: "hls" | "mp4" | "embed"
+          provider_name?: string
+          priority?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          movie_id?: string | null
+          episode_id?: string | null
+          label?: string
+          quality?: "1080p" | "720p" | "480p" | "360p" | "auto"
+          url?: string
+          format?: "hls" | "mp4" | "embed"
+          provider_name?: string
+          priority?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      ad_campaigns: {
+        Row: {
+          id: string
+          name: string
+          status: "active" | "paused" | "completed"
+          start_date: string | null
+          end_date: string | null
+          frequency_cap: Json
+          targeting: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          status?: "active" | "paused" | "completed"
+          start_date?: string | null
+          end_date?: string | null
+          frequency_cap?: Json
+          targeting?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          status?: "active" | "paused" | "completed"
+          start_date?: string | null
+          end_date?: string | null
+          frequency_cap?: Json
+          targeting?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      ad_creatives: {
+        Row: {
+          id: string
+          campaign_id: string | null
+          title: string
+          type: "banner" | "card" | "video" | "overlay"
+          media_url: string
+          destination_url: string
+          cta_text: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          campaign_id?: string | null
+          title: string
+          type: "banner" | "card" | "video" | "overlay"
+          media_url: string
+          destination_url: string
+          cta_text?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          campaign_id?: string | null
+          title?: string
+          type?: "banner" | "card" | "video" | "overlay"
+          media_url?: string
+          destination_url?: string
+          cta_text?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      ad_placements: {
+        Row: {
+          id: string
+          key: string
+          name: string
+          type: "banner" | "card" | "mid_roll" | "overlay"
+          frequency_cap_minutes: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          key: string
+          name: string
+          type: "banner" | "card" | "mid_roll" | "overlay"
+          frequency_cap_minutes?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          key?: string
+          name?: string
+          type?: "banner" | "card" | "mid_roll" | "overlay"
+          frequency_cap_minutes?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      ad_events: {
+        Row: {
+          id: string
+          ad_id: string | null
+          campaign_id: string | null
+          placement_key: string
+          event_type: "adSelected" | "adImpression" | "adClicked" | "adGateCompleted" | "adGateSkipped"
+          user_id: string | null
+          metadata: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          ad_id?: string | null
+          campaign_id?: string | null
+          placement_key: string
+          event_type: "adSelected" | "adImpression" | "adClicked" | "adGateCompleted" | "adGateSkipped"
+          user_id?: string | null
+          metadata?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          ad_id?: string | null
+          campaign_id?: string | null
+          placement_key?: string
+          event_type?: "adSelected" | "adImpression" | "adClicked" | "adGateCompleted" | "adGateSkipped"
+          user_id?: string | null
+          metadata?: Json
+          created_at?: string
+        }
+      }
     }
     Functions: {
       is_admin: {

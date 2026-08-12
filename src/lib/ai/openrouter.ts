@@ -11,11 +11,6 @@ export interface OpenRouterCompletionOptions {
   maxTokens?: number;
 }
 
-/**
- * OpenRouter AI Gateway Skeleton (Phase 00 Foundation)
- * Encapsulates server-only OpenRouter API configuration and client payload builder.
- * Actual HTTP execution logic will be implemented in Phase 05.
- */
 export class OpenRouterGateway {
   private apiKey: string;
   private baseUrl: string;
@@ -27,20 +22,39 @@ export class OpenRouterGateway {
     }
     this.apiKey = env.OPENROUTER_API_KEY || "";
     this.baseUrl = env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
-    this.defaultModel = env.OPENROUTER_MODEL || "anthropic/claude-3.5-sonnet";
+    this.defaultModel = env.OPENROUTER_MODEL || "google/gemini-2.5-flash";
   }
 
-  public getModel(): string {
-    return this.defaultModel;
+  public async chatCompletion(
+    messages: OpenRouterMessage[],
+    options?: OpenRouterCompletionOptions
+  ): Promise<string> {
+    if (!this.apiKey || this.apiKey.includes("placeholder")) {
+      return JSON.stringify({
+        titleBn: "ডেমো শিরোনাম",
+        description: "Demo generated AI summary for streaming title.",
+        descriptionBn: "স্ট্রিমিং কনটেন্টের জন্য ডেমো বাংলা সারাংশ।",
+        tagline: "Unleash Bengali Cinema",
+        contentRating: "TV-MA",
+        searchKeywords: "hawa, surung, monpura, bangla, movie",
+      });
+    }
+
+    const payload = this.prepareRequestPayload(messages, options);
+    const res = await fetch(payload.url, {
+      method: "POST",
+      headers: payload.headers,
+      body: JSON.stringify(payload.body),
+    });
+
+    if (!res.ok) {
+      throw new Error(`OpenRouter API error: ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || "";
   }
 
-  public getBaseUrl(): string {
-    return this.baseUrl;
-  }
-
-  /**
-   * Prepares execution payload header and parameters for OpenRouter request
-   */
   public prepareRequestPayload(
     messages: OpenRouterMessage[],
     options?: OpenRouterCompletionOptions
@@ -62,3 +76,5 @@ export class OpenRouterGateway {
     };
   }
 }
+
+export const openRouterGateway = new OpenRouterGateway();

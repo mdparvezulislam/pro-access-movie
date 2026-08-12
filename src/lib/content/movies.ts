@@ -28,7 +28,7 @@ export async function resolveMovieMediaUrls(movie: Movie): Promise<{
 }
 
 export async function getPublishedMovies(
-  pagination?: PaginationInput
+  pagination?: { limit?: number; offset?: number }
 ): Promise<(Movie & { posterUrl: string; backdropUrl: string })[]> {
   const { limit, offset } = paginationSchema.parse(pagination || {});
   const supabase = await createServerClient();
