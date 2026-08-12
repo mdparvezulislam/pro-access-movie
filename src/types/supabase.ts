@@ -571,6 +571,62 @@ export interface Database {
           created_at?: string
         }
       }
+      media_files: {
+        Row: {
+          id: string
+          bucket: "flex-posters" | "flex-backdrops" | "flex-people" | "flex-trailers"
+          path: string
+          original_name: string
+          mime_type: string
+          size_bytes: number
+          width: number | null
+          height: number | null
+          content_type: "poster" | "backdrop" | "photo" | "trailer"
+          movie_id: string | null
+          series_id: string | null
+          person_id: string | null
+          status: "active" | "archived"
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          bucket: "flex-posters" | "flex-backdrops" | "flex-people" | "flex-trailers"
+          path: string
+          original_name: string
+          mime_type: string
+          size_bytes: number
+          width?: number | null
+          height?: number | null
+          content_type: "poster" | "backdrop" | "photo" | "trailer"
+          movie_id?: string | null
+          series_id?: string | null
+          person_id?: string | null
+          status?: "active" | "archived"
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          bucket?: "flex-posters" | "flex-backdrops" | "flex-people" | "flex-trailers"
+          path?: string
+          original_name?: string
+          mime_type?: string
+          size_bytes?: number
+          width?: number | null
+          height?: number | null
+          content_type?: "poster" | "backdrop" | "photo" | "trailer"
+          movie_id?: string | null
+          series_id?: string | null
+          person_id?: string | null
+          status?: "active" | "archived"
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Functions: {
       is_admin: {

@@ -13,9 +13,11 @@ pnpm install
 # Local Supabase Database Setup
 pnpm exec supabase start         # Start local Supabase containers
 pnpm exec supabase db push        # Apply all SQL migrations
+pnpm db:seed                      # Reset DB & load seed catalog
 
-# Admin Seeding (Requires local Supabase or configured .env.local)
+# Admin Seeding & Media Utilities
 pnpm seed:admin                   # Seeds admin@flex.bd with admin role
+pnpm media:cleanup                # Audit storage buckets for orphaned media
 
 # Run development server
 pnpm dev
@@ -29,44 +31,35 @@ pnpm build       # Production bundle build
 
 ---
 
-## 🔐 Auth & Security Infrastructure (Phase 01)
+## 🖼 Media & Storage Architecture (Phase 03)
 
-1. **Role System**:
-   - Roles are stored in `public.user_roles` (`admin`, `moderator`).
-   - `public.is_admin(user_id)` is a `SECURITY DEFINER` function checking user roles or service-role JWTs.
-   - `public.make_admin(target_user_id)` is callable only by existing admins or via service-role.
+1. **Private Storage Buckets**:
+   - `flex-posters`: Poster images (max 8MB, MIME: JPEG/PNG/WEBP).
+   - `flex-backdrops`: Hero backdrop artwork (max 8MB, MIME: JPEG/PNG/WEBP).
+   - `flex-people`: Cast & crew headshots (max 8MB, MIME: JPEG/PNG/WEBP).
+   - `flex-trailers`: Content trailers (max 500MB, MIME: MP4/WebM).
+   - All buckets are private (`public = false`); objects delivered strictly via server-side signed URLs.
 
-2. **Middleware Route Protection (`src/middleware.ts`)**:
-   - All `/admin/**` routes are intercepted server-side.
-   - Requires a valid session AND `is_admin` RPC verification.
-   - Unauthenticated visitors are redirected to `/login?next=/admin`.
-   - Non-admin users are redirected to `/`.
+2. **Server-Side Upload Route Handler (`POST /api/media/upload`)**:
+   - Requires admin authentication (`requireAdminAuth()`).
+   - Validates MIME types, maximum file size, and content polymorphic references (`movie_id`, `series_id`, `person_id`).
+   - Stores metadata in `public.media_files` tracking table (`bucket`, `path`, `mime_type`, `size_bytes`, `status`).
 
-3. **Row Level Security (RLS)**:
-   - `public.profiles`: Readable by authenticated users; writable only by profile owners (`auth.uid() = id`).
-   - `public.user_roles`: Readable by authenticated users; insert/delete restricted to admins.
-   - `public.app_settings`: Key/value store readable by authenticated users; writable only by admins.
+3. **Signed URL Delivery & Fallbacks**:
+   - `getSignedMediaUrl(path, bucket)` generates temporary signed URLs.
+   - Gracefully returns neutral fallback placeholder images when media is unassigned or missing, preventing page render crashes.
 
 ---
 
-## 🛠 Architectural Conventions
+## 🔐 Auth & Security Infrastructure
 
-1. **Strict TypeScript**:
-   - `noImplicitAny` and strict null checks enforced.
-   - `any` is strictly prohibited unless accompanied by an explicit inline comment justification.
+1. **Role System**:
+   - Roles stored in `public.user_roles` (`admin`, `moderator`).
+   - `public.is_admin(user_id)` SECURITY DEFINER helper function.
 
-2. **Server Components First**:
-   - All pages and components default to React Server Components (RSC).
-   - Use `"use client"` sparingly—only for interactive elements (event handlers, state hooks).
-
-3. **Feature Modularization (`src/features/*`)**:
-   - Domain logic belongs inside `src/features/<feature>/lib/`.
-   - Feature folders contain self-contained `components/`, `hooks/`, and `lib/`.
-
-4. **Environment Boundary Protection**:
-   - `OPENROUTER_API_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are strictly server-only.
-   - Only `NEXT_PUBLIC_` prefixed variables may be accessed on the client.
-   - Env variables are validated at runtime via `src/lib/env.ts`.
+2. **Middleware Route Protection (`src/middleware.ts`)**:
+   - Intercepts all `/admin/**` requests.
+   - Verifies active session & admin role server-side.
 
 ---
 
@@ -74,21 +67,17 @@ pnpm build       # Production bundle build
 
 ```
 src/
-├── app/                  — App Router layout, pages, and global error boundaries
+├── app/                  — App Router layout, pages, and API routes (/api/media/upload)
 ├── components/
+│   ├── admin/            — ImageUploader and MediaGallery components
 │   ├── ui/               — Primitive shadcn components
-│   ├── common/           — App shell components (Navbar, HeroBanner, ContentRail, Footer)
-│   └── providers/        — Client providers
-├── features/
-│   ├── auth/             — Auth Server Actions, session hooks, and role helpers
-│   └── content/          — Content feature submodules
+│   └── common/           — Navbar, HeroBanner, ContentRail, Footer
+├── features/             — Modular feature domains (auth, content, admin)
 ├── lib/
-│   ├── ai/               — OpenRouter gateway configuration
-│   ├── supabase/         — Browser and Server client factories
-│   ├── validation/       — Zod validation schemas
-│   └── env.ts            — Runtime environment validator
-└── middleware.ts         — Route protection middleware for /admin
-supabase/
-├── migrations/           — Idempotent SQL migrations (001 to 005)
-└── tests/                — RLS policy verification SQL scripts
+│   ├── content/          — Server-side content services with resolved media URLs
+│   ├── media/            — Storage services, signed URL generation, and upload logic
+│   └── supabase/         — Browser & Server client factories
+scripts/
+├── seed-admin.ts         — Admin seeding CLI script (pnpm seed:admin)
+└── cleanup-media.ts      — Storage orphan audit script (pnpm media:cleanup)
 ```
