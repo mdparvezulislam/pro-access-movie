@@ -54,7 +54,7 @@ async function main() {
       if (createError) {
         console.error(`Failed to create bucket '${bId}':`, createError.message);
       } else {
-        console.log(`Successfully created bucket '${bId}'!`);
+        console.log(`Successfully created bucket '${newBucket?.name || bId}'!`);
       }
     } else {
       console.log(`Bucket '${bId}' exists.`);

@@ -43,7 +43,7 @@ function validateRemoteUrl(urlStr: string): boolean {
  * Downloads a remote image URL and stores it using the Supabase Media Storage engine.
  * Includes SSRF validation, MIME verification, and safe fallback on storage error.
  */
-async function _ingestRemoteMedia(
+export async function ingestRemoteMedia(
   url: string | undefined,
   folder: MediaFolder = "movie",
   contentType: "poster" | "backdrop" | "thumbnail" = "poster",

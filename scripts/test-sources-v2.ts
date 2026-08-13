@@ -99,7 +99,11 @@ async function runTest() {
     .eq("content_id", testMovie.id)
     .eq("is_active", true);
 
-  console.log("Active streams count for movie:", activeStreams?.length);
+  if (selectErr) {
+    console.error("SELECT Active Sources Error:", selectErr);
+  } else {
+    console.log("Active streams count for movie:", activeStreams?.length);
+  }
 
   // 6. CLEANUP Test Data
   console.log("\n--- Step 5: CLEANUP Test Records ---");

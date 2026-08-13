@@ -124,7 +124,7 @@ export async function getUserWatchHistory(limit = 20): Promise<WatchHistoryItem[
 /**
  * Deletes watch history for user using canonical history action.
  */
-export async function clearUserWatchHistory(_historyId?: string): Promise<boolean> {
+export async function clearUserWatchHistory(): Promise<boolean> {
   try {
     const res = await clearWatchHistoryAction();
     return res.success;

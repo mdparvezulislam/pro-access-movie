@@ -410,16 +410,17 @@ export function FlexVideoPlayer({
                   videoRef.current.load();
                 }
               }}
-              className="px-4 py-2 rounded-xl bg-surface-raised border border-border text-white font-bold text-xs flex items-center gap-1.5 hover:bg-surface-raised/80 transition-colors"
+              className="px-5 py-2.5 rounded-xl bg-surface-raised border border-border/80 text-white font-extrabold text-xs flex items-center gap-2 hover:bg-surface-raised/80 active:scale-95 transition-all min-h-[44px]"
             >
-              <RefreshCw className="h-3.5 w-3.5" /> Retry Server
+              <RefreshCw className="h-4 w-4 text-red-500" />
+              <span>Retry Server</span>
             </button>
             {sources.length > 1 && (
               <button
                 onClick={() => handleServerSwitch((activeSourceIndex + 1) % sources.length)}
-                className="px-4 py-2 rounded-xl bg-red-600 text-white font-bold text-xs shadow-lg hover:bg-red-700 transition-colors"
+                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs shadow-lg hover:shadow-red-600/30 active:scale-95 transition-all min-h-[44px]"
               >
-                Switch Server
+                <span>Switch Server</span>
               </button>
             )}
           </div>
