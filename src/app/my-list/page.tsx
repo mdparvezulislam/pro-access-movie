@@ -2,8 +2,8 @@ import React from "react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { Heart, Film, ArrowLeft } from "lucide-react";
-import { getPublicMovies } from "@/lib/content/public-catalog";
-import { ContentCard } from "@/components/content/ContentCard";
+import { getUserWatchlist } from "@/features/user/lib/watchlist";
+import { PosterCard } from "@/components/cards/poster-card";
 import { AdSlot } from "@/components/ads/AdSlot";
 
 export const metadata: Metadata = {
@@ -11,9 +11,10 @@ export const metadata: Metadata = {
   description: "View and manage your saved movies and TV series.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function MyListPage() {
-  const { items } = await getPublicMovies();
-  const savedItems = items.slice(0, 8); // Demo saved items
+  const savedItems = await getUserWatchlist();
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -42,7 +43,18 @@ export default async function MyListPage() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {savedItems.map((item) => (
-            <ContentCard key={item.id} item={item} />
+            <PosterCard
+              key={item.id}
+              id={item.id}
+              title={item.title}
+              titleBn={item.titleBn}
+              slug={item.slug}
+              type={item.type}
+              posterUrl={item.posterUrl || ""}
+              releaseYear={item.releaseYear}
+              rating={item.rating}
+              badgeText="SAVED"
+            />
           ))}
         </div>
       )}

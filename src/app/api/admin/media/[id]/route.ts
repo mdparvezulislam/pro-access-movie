@@ -12,7 +12,7 @@ import { FlexBucket, MediaContentType, MediaFolder, AccessStrategy } from "@/typ
 
 export async function GET(
   request: NextRequest,
-  props: { params: Promise<Record<string, string>> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -20,7 +20,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = await props.params;
+    const { id } = await params;
     const record = await getMediaFileById(id);
 
     if (!record) {
@@ -46,7 +46,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  props: { params: Promise<Record<string, string>> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -59,7 +59,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Forbidden: Admin privilege required" }, { status: 403 });
     }
 
-    const { id } = await props.params;
+    const { id } = await params;
     const body = await request.json();
 
     const record = await updateMediaMetadata(id, {
@@ -84,7 +84,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  props: { params: Promise<Record<string, string>> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -97,7 +97,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden: Admin privilege required" }, { status: 403 });
     }
 
-    const { id } = await props.params;
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const hardDelete = searchParams.get("hard") === "true";
 
@@ -116,7 +116,7 @@ export async function DELETE(
 
 export async function POST(
   request: NextRequest,
-  props: { params: Promise<Record<string, string>> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -129,7 +129,7 @@ export async function POST(
       return NextResponse.json({ error: "Forbidden: Admin privilege required" }, { status: 403 });
     }
 
-    const { id } = await props.params;
+    const { id } = await params;
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 

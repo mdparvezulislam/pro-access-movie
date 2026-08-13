@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   description: "Manage your streaming profile, watch history, and viewing preferences.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AccountPage() {
   const user = await getCurrentUser();
   if (!user) {

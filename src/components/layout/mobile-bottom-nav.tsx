@@ -22,8 +22,8 @@ export function MobileBottomNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass-nav border-t border-border px-3 py-2">
-      <div className="flex items-center justify-around">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass-nav border-t border-border px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-2xl">
+      <div className="flex items-center justify-around max-w-md mx-auto">
         {links.map((link) => {
           const Icon = link.icon;
           const isActive = pathname === link.href;
@@ -32,10 +32,10 @@ export function MobileBottomNav() {
               key={link.href}
               href={link.href}
               className={cn(
-                "flex flex-col items-center gap-1 transition-colors py-1 px-2 rounded-lg text-[10px] font-medium",
+                "flex flex-col items-center justify-center gap-1 transition-colors min-h-[44px] min-w-[48px] py-1 px-2.5 rounded-xl text-[10px] font-medium active:scale-95",
                 isActive
-                  ? "text-red-500 font-bold"
-                  : "text-text-muted hover:text-text-primary"
+                  ? "text-red-500 font-bold bg-red-600/10"
+                  : "text-text-muted hover:text-text-primary hover:bg-surface-raised/50"
               )}
             >
               <Icon className={cn("h-5 w-5", isActive && "stroke-[2.5]")} />

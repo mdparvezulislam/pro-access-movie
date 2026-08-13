@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { checkIsAdmin, getCurrentUser } from "@/features/auth/lib/auth-helpers";
 import { createAdminClient } from "@/lib/supabase/server";
 
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
       label,
       url,
       quality = "1080p",
-      resolution = "1920x1080",
+      file_type = "mp4",
       file_size_bytes = 0,
       language = "English",
       priority = 1,
@@ -77,6 +78,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    try {
+      new URL(url);
+    } catch {
+      return NextResponse.json({ error: "Invalid download URL structure." }, { status: 400 });
+    }
+
     const supabase = await createAdminClient();
     const { data, error } = await supabase
       .from("download_sources")
@@ -86,7 +93,7 @@ export async function POST(request: NextRequest) {
         label,
         url,
         quality,
-        resolution,
+        file_type,
         file_size_bytes,
         language,
         priority,
@@ -99,6 +106,11 @@ export async function POST(request: NextRequest) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    revalidatePath("/watch", "layout");
+    revalidatePath("/movies", "layout");
+    revalidatePath("/series", "layout");
+    revalidatePath("/admin", "layout");
 
     return NextResponse.json({ success: true, source: data });
   } catch (err: unknown) {
@@ -126,6 +138,14 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Source ID is required for update." }, { status: 400 });
     }
 
+    if (updateFields.url) {
+      try {
+        new URL(updateFields.url);
+      } catch {
+        return NextResponse.json({ error: "Invalid download URL structure." }, { status: 400 });
+      }
+    }
+
     const supabase = await createAdminClient();
     const { data, error } = await supabase
       .from("download_sources")
@@ -140,6 +160,11 @@ export async function PATCH(request: NextRequest) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    revalidatePath("/watch", "layout");
+    revalidatePath("/movies", "layout");
+    revalidatePath("/series", "layout");
+    revalidatePath("/admin", "layout");
 
     return NextResponse.json({ success: true, source: data });
   } catch (err: unknown) {
@@ -173,6 +198,11 @@ export async function DELETE(request: NextRequest) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    revalidatePath("/watch", "layout");
+    revalidatePath("/movies", "layout");
+    revalidatePath("/series", "layout");
+    revalidatePath("/admin", "layout");
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {

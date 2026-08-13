@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   description: "Resume your recently watched movies and TV series episodes.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function ContinueWatchingPage() {
   const { items } = await getPublicMovies();
   const historyItems = items.slice(0, 6);

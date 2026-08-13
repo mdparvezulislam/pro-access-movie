@@ -48,10 +48,11 @@ export interface PublicSeriesDetail extends PublicContentItem {
 
 export interface PlaybackSourceItem {
   id: string;
-  content_type: "movie" | "episode";
+  content_type: "movie" | "series" | "episode";
   content_id: string;
   source_name: string;
   url: string;
+  format?: string;
   quality: string;
   resolution?: string | null;
   language: string;
@@ -61,15 +62,17 @@ export interface PlaybackSourceItem {
 
 export interface DownloadSourceItem {
   id: string;
-  content_type: "movie" | "episode";
+  content_type: "movie" | "series" | "episode";
   content_id: string;
   label: string;
   url: string;
   quality: string;
+  file_type?: string;
   file_size_bytes?: number | null;
   language: string;
   priority: number;
 }
+
 
 /**
  * Normalizes movie database row to PublicContentItem.
@@ -380,6 +383,45 @@ export async function getSeriesBySlug(slug: string): Promise<{
     return { series: null, relatedSeries: [] };
   }
 }
+
+/**
+ * Fetches active playback and download sources for an episode or series.
+ */
+export async function getEpisodeSources(episodeId: string): Promise<{
+  playbackSources: PlaybackSourceItem[];
+  downloadSources: DownloadSourceItem[];
+}> {
+  if (!episodeId) return { playbackSources: [], downloadSources: [] };
+
+  try {
+    const supabase = await createAdminClient();
+    const [pRes, dRes] = await Promise.all([
+      supabase
+        .from("playback_sources")
+        .select("*")
+        .eq("content_type", "episode")
+        .eq("content_id", episodeId)
+        .eq("is_active", true)
+        .order("priority", { ascending: true }),
+      supabase
+        .from("download_sources")
+        .select("*")
+        .eq("content_type", "episode")
+        .eq("content_id", episodeId)
+        .eq("is_active", true)
+        .order("priority", { ascending: true }),
+    ]);
+
+    return {
+      playbackSources: (pRes.data || []) as PlaybackSourceItem[],
+      downloadSources: (dRes.data || []) as DownloadSourceItem[],
+    };
+  } catch (err) {
+    console.error("Error fetching episode sources:", err);
+    return { playbackSources: [], downloadSources: [] };
+  }
+}
+
 
 /**
  * Global search across movies, series, and genres.

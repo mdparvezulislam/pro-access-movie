@@ -2,13 +2,26 @@ import Link from "next/link";
 import { Navbar } from "@/components/common/navbar";
 import { Footer } from "@/components/common/footer";
 import { PosterCard } from "@/components/cards/poster-card";
-import { DEMO_GENRES, DEMO_MOVIES } from "@/lib/content/catalog-fallback";
+import { getPublicMovies, getPublicSeries } from "@/lib/content/public-catalog";
 import { Compass } from "lucide-react";
 
 export const metadata = {
   title: "Genres — PRO ACCESS MOVIE",
-  description: "Browse movies and series by genre on PRO ACCESS MOVIE.",
+  description: "Browse movies and web series by genre on PRO ACCESS MOVIE.",
 };
+
+export const dynamic = "force-dynamic";
+
+const GENRE_LIST = [
+  { id: "action", name: "Action", name_bn: "অ্যাকশন" },
+  { id: "bengali", name: "Bengali", name_bn: "বাংলা" },
+  { id: "crime", name: "Crime", name_bn: "ক্রাইম" },
+  { id: "thriller", name: "Thriller", name_bn: "থ্রিলার" },
+  { id: "drama", name: "Drama", name_bn: "ড্রামা" },
+  { id: "mystery", name: "Mystery", name_bn: "রহস্য" },
+  { id: "romance", name: "Romance", name_bn: "রোমান্স" },
+  { id: "comedy", name: "Comedy", name_bn: "কমেডি" },
+];
 
 export default async function GenresPage({
   searchParams,
@@ -16,13 +29,26 @@ export default async function GenresPage({
   searchParams: Promise<{ name?: string }>;
 }) {
   const params = await searchParams;
-  const activeGenreName = params.name || "Action";
+  const activeGenreName = params?.name || "Action";
 
-  const filteredMovies = DEMO_MOVIES.filter((m) =>
-    m.genresList?.some((g) => g.toLowerCase() === activeGenreName.toLowerCase())
-  );
+  // Fetch real content from Supabase with safe fallbacks
+  const [moviesRes, seriesRes] = await Promise.all([
+    getPublicMovies({ genre: activeGenreName, limit: 18 }),
+    getPublicSeries({ genre: activeGenreName, limit: 18 }),
+  ]);
 
-  const displayMovies = filteredMovies.length > 0 ? filteredMovies : DEMO_MOVIES;
+  const moviesList = moviesRes?.items || [];
+  const seriesList = seriesRes?.items || [];
+  let combinedItems = [...moviesList, ...seriesList];
+
+  // Fallback to all content if empty for requested genre
+  if (combinedItems.length === 0) {
+    const [allMovies, allSeries] = await Promise.all([
+      getPublicMovies({ limit: 12 }),
+      getPublicSeries({ limit: 12 }),
+    ]);
+    combinedItems = [...(allMovies?.items || []), ...(allSeries?.items || [])];
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-text-primary">
@@ -35,13 +61,13 @@ export default async function GenresPage({
             <span>Browse Genres</span>
           </h1>
           <p className="text-xs text-text-muted mt-1">
-            Explore movies and series organized by thematic genres
+            Explore Bengali & International movies and series organized by thematic genres
           </p>
         </div>
 
         {/* Genre Pill Selection */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-          {DEMO_GENRES.map((g) => {
+          {GENRE_LIST.map((g) => {
             const isActive = g.name.toLowerCase() === activeGenreName.toLowerCase();
             return (
               <Link
@@ -62,22 +88,22 @@ export default async function GenresPage({
         {/* Selected Genre Header & Results Grid */}
         <div className="space-y-4">
           <h2 className="text-xl font-extrabold text-text-primary flex items-center gap-2">
-            <span>{activeGenreName} Cinema & Series</span>
-            <span className="text-xs font-normal text-text-muted">({displayMovies.length} titles)</span>
+            <span>{activeGenreName} Content</span>
+            <span className="text-xs font-normal text-text-muted">({combinedItems.length} titles)</span>
           </h2>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {displayMovies.map((movie) => (
+            {combinedItems.map((item) => (
               <PosterCard
-                key={movie.id}
-                id={movie.id}
-                title={movie.title}
-                titleBn={movie.title_bn}
-                slug={movie.slug}
-                type="movie"
-                posterUrl={movie.posterUrl}
-                releaseYear={movie.release_year}
-                rating={movie.rating}
+                key={item.id}
+                id={item.id}
+                title={item.title}
+                titleBn={item.title_bn}
+                slug={item.slug}
+                type={item.type}
+                posterUrl={item.poster_url}
+                releaseYear={item.release_year}
+                rating={item.rating}
               />
             ))}
           </div>

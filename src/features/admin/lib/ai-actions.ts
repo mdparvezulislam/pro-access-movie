@@ -1,17 +1,7 @@
 "use server";
-import { z } from "zod";
-import { openRouterGateway } from "@/lib/ai/openrouter";
+import { generateAIDescription, generateAISeoMetadata, enhanceAIText } from "@/lib/ai/operations";
 import { createServerClient } from "@/lib/supabase/server";
 import { checkIsAdmin, getCurrentUser } from "@/features/auth/lib/auth-helpers";
-
-const metadataSchema = z.object({
-  titleBn: z.string(),
-  description: z.string(),
-  descriptionBn: z.string(),
-  tagline: z.string(),
-  contentRating: z.string(),
-  searchKeywords: z.string(),
-});
 
 export async function generateMetadataAction(title: string) {
   const user = await getCurrentUser();
@@ -19,31 +9,21 @@ export async function generateMetadataAction(title: string) {
     return { success: false, error: "Forbidden: Admin access required" };
   }
 
-  const prompt = `You are a film & media metadata specialist for PRO ACCESS MOVIE, a Bangladesh streaming platform.
-Generate structured metadata for the movie/series title: "${title}".
-Return strictly valid JSON matching this schema:
-{
-  "titleBn": "Bangla title translation",
-  "description": "Engaging 2-3 sentence English synopsis",
-  "descriptionBn": "Engaging 2-3 sentence Bengali synopsis",
-  "tagline": "Short catchy tagline",
-  "contentRating": "PG-13 / R / TV-MA",
-  "searchKeywords": "comma separated english and banglish keywords"
-}`;
-
   try {
-    const rawResponse = await openRouterGateway.chatCompletion([
-      { role: "system", content: "Output strictly JSON only." },
-      { role: "user", content: prompt },
-    ]);
+    const descResult = await generateAIDescription({ operation: "generate_description", title, targetLanguage: "bn" });
+    const seoResult = await generateAISeoMetadata({ operation: "generate_seo", title, existingDescription: descResult.data.description });
 
-    const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error("No JSON object returned by AI");
-    }
-
-    const parsed = metadataSchema.parse(JSON.parse(jsonMatch[0]));
-    return { success: true, metadata: parsed };
+    return {
+      success: true,
+      metadata: {
+        titleBn: descResult.data.descriptionBn?.slice(0, 50) || `${title} (বাংলা)`,
+        description: descResult.data.description,
+        descriptionBn: descResult.data.descriptionBn,
+        tagline: descResult.data.tagline || `Experience ${title}`,
+        contentRating: "TV-MA",
+        searchKeywords: seoResult.data.keywords.join(", "),
+      },
+    };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "AI generation error";
     return { success: false, error: message };
@@ -57,12 +37,8 @@ export async function translateToBengaliAction(text: string) {
   }
 
   try {
-    const translation = await openRouterGateway.chatCompletion([
-      { role: "system", content: "Translate the input text into natural Bengali. Output only the Bengali text." },
-      { role: "user", content: text },
-    ]);
-
-    return { success: true, translation: translation.trim() };
+    const res = await generateAIDescription({ operation: "generate_description", title: text, targetLanguage: "bn" });
+    return { success: true, translation: res.data.descriptionBn || text };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Translation error";
     return { success: false, error: message };
@@ -76,12 +52,8 @@ export async function extractKeywordsAction(text: string) {
   }
 
   try {
-    const keywords = await openRouterGateway.chatCompletion([
-      { role: "system", content: "Extract 8-12 comma-separated English and Banglish search keywords for movie catalog indexing. Output only the keywords." },
-      { role: "user", content: text },
-    ]);
-
-    return { success: true, keywords: keywords.trim() };
+    const seoResult = await generateAISeoMetadata({ operation: "generate_seo", title: text });
+    return { success: true, keywords: seoResult.data.keywords.join(", ") };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Keyword extraction error";
     return { success: false, error: message };

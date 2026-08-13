@@ -4,7 +4,7 @@ import { createServerClient } from "@/lib/supabase/server";
 
 export async function GET(
   request: NextRequest,
-  props: { params: Promise<Record<string, string>> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -17,7 +17,7 @@ export async function GET(
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
-    const { id: seasonId } = await props.params;
+    const { id: seasonId } = await params;
     const supabase = await createServerClient();
     const { data, error } = await supabase
       .from("episodes")
@@ -38,7 +38,7 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  props: { params: Promise<Record<string, string>> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -51,7 +51,7 @@ export async function POST(
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
-    const { id: seasonId } = await props.params;
+    const { id: seasonId } = await params;
     const body = await request.json();
     const {
       episode_number,

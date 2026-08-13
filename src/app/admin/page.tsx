@@ -4,6 +4,8 @@ import { getPublishedSeries } from "@/lib/content/series";
 import { createServerClient } from "@/lib/supabase/server";
 import { AdminStudioView } from "./admin-studio-view";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminPage() {
   await requireAdminAuth("/admin");
 

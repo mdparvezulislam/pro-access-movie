@@ -6,6 +6,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { ProfileSettings } from "@/features/user/components/profile-settings";
 import { getCurrentUserProfile } from "@/features/user/lib/profile";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProfilePage() {
   const user = await requireAuth("/profile");
   const displayName = user.user_metadata?.display_name || user.email?.split("@")[0] || "User";

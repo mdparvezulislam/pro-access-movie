@@ -4,6 +4,8 @@ import { Footer } from "@/components/common/footer";
 import { getUserWatchlist } from "@/features/user/lib/watchlist";
 import { Bookmark, Film, Star } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function WatchlistPage() {
   const items = await getUserWatchlist();
 

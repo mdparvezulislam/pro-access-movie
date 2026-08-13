@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { checkIsAdmin, getCurrentUser } from "@/features/auth/lib/auth-helpers";
 import { createAdminClient } from "@/lib/supabase/server";
 
@@ -77,6 +78,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // URL validation
+    try {
+      new URL(url);
+    } catch {
+      return NextResponse.json({ error: "Invalid stream URL structure." }, { status: 400 });
+    }
+
     const supabase = await createAdminClient();
     const { data, error } = await supabase
       .from("playback_sources")
@@ -99,6 +107,12 @@ export async function POST(request: NextRequest) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    // Revalidate Next.js router cache
+    revalidatePath("/watch", "layout");
+    revalidatePath("/movies", "layout");
+    revalidatePath("/series", "layout");
+    revalidatePath("/admin", "layout");
 
     return NextResponse.json({ success: true, source: data });
   } catch (err: unknown) {
@@ -126,6 +140,14 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Source ID is required for update." }, { status: 400 });
     }
 
+    if (updateFields.url) {
+      try {
+        new URL(updateFields.url);
+      } catch {
+        return NextResponse.json({ error: "Invalid stream URL structure." }, { status: 400 });
+      }
+    }
+
     const supabase = await createAdminClient();
     const { data, error } = await supabase
       .from("playback_sources")
@@ -140,6 +162,12 @@ export async function PATCH(request: NextRequest) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    // Revalidate Next.js router cache
+    revalidatePath("/watch", "layout");
+    revalidatePath("/movies", "layout");
+    revalidatePath("/series", "layout");
+    revalidatePath("/admin", "layout");
 
     return NextResponse.json({ success: true, source: data });
   } catch (err: unknown) {
@@ -173,6 +201,12 @@ export async function DELETE(request: NextRequest) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    // Revalidate Next.js router cache
+    revalidatePath("/watch", "layout");
+    revalidatePath("/movies", "layout");
+    revalidatePath("/series", "layout");
+    revalidatePath("/admin", "layout");
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
