@@ -15,9 +15,6 @@ import {
   ArrowDown,
   X,
   CheckCircle2,
-  Globe,
-  FileType,
-  Sparkles,
   Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -101,8 +98,28 @@ export function MediaSourceStudio({
   }, [contentType, contentId]);
 
   useEffect(() => {
-    fetchAllSources();
-  }, [fetchAllSources]);
+    let ignore = false;
+    if (!contentId) return;
+    queueMicrotask(async () => {
+      setIsLoading(true);
+      try {
+        const [pRes, dRes] = await Promise.all([
+          fetch(`/api/admin/sources/playback?content_type=${contentType}&content_id=${contentId}`),
+          fetch(`/api/admin/sources/download?content_type=${contentType}&content_id=${contentId}`),
+        ]);
+        const [pData, dData] = await Promise.all([pRes.json(), dRes.json()]);
+        if (!ignore) {
+          if (pRes.ok) setPlaybackSources(pData.sources || []);
+          if (dRes.ok) setDownloadSources(dData.sources || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch media sources:", err);
+      } finally {
+        if (!ignore) setIsLoading(false);
+      }
+    });
+    return () => { ignore = true; };
+  }, [contentType, contentId]);
 
   // Stream URL auto detection
   const handleStreamUrlChange = (val: string) => {

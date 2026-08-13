@@ -34,8 +34,8 @@ export function MobileBottomNav() {
               className={cn(
                 "flex flex-col items-center justify-center gap-1 transition-colors min-h-[44px] min-w-[48px] py-1 px-2.5 rounded-xl text-[10px] font-medium active:scale-95",
                 isActive
-                  ? "text-red-500 font-bold bg-red-600/10"
-                  : "text-text-muted hover:text-text-primary hover:bg-surface-raised/50"
+                  ? "text-red-600 dark:text-red-500 font-extrabold bg-red-500/10 dark:bg-red-600/15 border border-red-500/20"
+                  : "text-text-secondary hover:text-text-primary hover:bg-surface-raised/50"
               )}
             >
               <Icon className={cn("h-5 w-5", isActive && "stroke-[2.5]")} />

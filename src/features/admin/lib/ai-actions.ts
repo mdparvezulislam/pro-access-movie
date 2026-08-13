@@ -1,5 +1,5 @@
 "use server";
-import { generateAIDescription, generateAISeoMetadata, enhanceAIText } from "@/lib/ai/operations";
+import { generateAIDescription, generateAISeoMetadata } from "@/lib/ai/operations";
 import { createServerClient } from "@/lib/supabase/server";
 import { checkIsAdmin, getCurrentUser } from "@/features/auth/lib/auth-helpers";
 

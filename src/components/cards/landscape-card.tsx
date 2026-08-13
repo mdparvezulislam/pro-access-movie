@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Play, Star } from "lucide-react";
 
 export interface LandscapeCardProps {
@@ -18,18 +19,22 @@ export interface LandscapeCardProps {
 export function LandscapeCard({
   title,
   titleBn,
+  slug,
+  type = "movie",
   backdropUrl,
   posterUrl,
   releaseYear,
   rating = 8.5,
   onClick,
 }: LandscapeCardProps) {
+  const href = type === "series" ? `/series/${slug}` : `/movies/${slug}`;
   const displayTitle = titleBn || title;
 
   return (
-    <div
+    <Link
+      href={href}
       onClick={onClick}
-      className="group relative rounded-2xl bg-surface-raised border border-border overflow-hidden cursor-pointer hover:border-red-600/60 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 block"
+      className="group relative rounded-xl sm:rounded-2xl bg-surface-raised border border-border/60 overflow-hidden cursor-pointer hover:border-red-600/60 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 block"
     >
       <div className="aspect-video w-full overflow-hidden bg-surface-base relative">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -39,28 +44,28 @@ export function LandscapeCard({
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity" />
 
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
-          <div className="h-12 w-12 rounded-full bg-red-600 text-white flex items-center justify-center shadow-xl shadow-red-950/60 transform group-hover:scale-110 transition-transform">
-            <Play className="h-6 w-6 fill-current ml-0.5" />
+          <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-full bg-red-600 text-white flex items-center justify-center shadow-xl shadow-red-950/60 transform group-hover:scale-110 transition-transform">
+            <Play className="h-5 w-5 sm:h-6 sm:w-6 fill-current ml-0.5" />
           </div>
         </div>
 
-        <div className="absolute bottom-3 left-3 right-3 space-y-1 z-10">
-          <div className="flex items-center gap-2 text-[10px] text-text-muted font-semibold">
+        <div className="absolute bottom-3 left-3 right-3 space-y-0.5 z-10">
+          <div className="flex items-center gap-2 text-[10px] sm:text-xs text-neutral-300 font-semibold">
             {releaseYear && <span>{releaseYear}</span>}
             {rating && (
-              <span className="text-amber-400 font-bold flex items-center gap-0.5">
+              <span className="text-amber-400 font-extrabold flex items-center gap-0.5">
                 <Star className="w-3 h-3 fill-current" /> {rating}
               </span>
             )}
           </div>
-          <h3 className="text-sm font-extrabold text-text-primary group-hover:text-red-400 transition truncate">
+          <h3 className="text-xs sm:text-sm font-extrabold text-white group-hover:text-red-400 transition truncate drop-shadow-sm">
             {displayTitle}
           </h3>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

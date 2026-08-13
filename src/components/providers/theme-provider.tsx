@@ -13,16 +13,15 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "dark";
+    const stored = localStorage.getItem("flex_theme") as Theme | null;
+    return stored === "dark" || stored === "light" ? stored : "dark";
+  });
 
   useEffect(() => {
-    const stored = localStorage.getItem("flex_theme") as Theme | null;
-    if (stored && (stored === "dark" || stored === "light")) {
-      document.documentElement.classList.toggle("dark", stored === "dark");
-    } else {
-      document.documentElement.classList.add("dark");
-    }
-  }, []);
+    document.documentElement.classList.toggle("dark", theme === "dark");
+  }, [theme]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);

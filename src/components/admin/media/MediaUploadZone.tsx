@@ -31,7 +31,7 @@ export function MediaUploadZone({
   const [contentType, setContentType] = useState<MediaContentType>(defaultContentType);
   const [title, setTitle] = useState("");
   const [altText, setAltText] = useState("");
-  const [accessStrategy, setAccessStrategy] = useState<AccessStrategy>("public");
+  const [accessStrategy] = useState<AccessStrategy>("public");
 
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);

@@ -363,7 +363,7 @@ export function ContentEditorForm({ id, type, initialData }: ContentEditorFormPr
               if (descEn) setDescription(descEn);
               if (descBn) setDescriptionBn(descBn);
             }}
-            onApplySeo={(seoTitle, _seoDesc) => {
+            onApplySeo={(seoTitle) => {
               toast.success(`Generated SEO Title: "${seoTitle}"`);
             }}
             onApplyClassification={(genres, rating) => {

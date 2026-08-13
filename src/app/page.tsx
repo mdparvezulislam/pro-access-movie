@@ -50,7 +50,7 @@ export default async function HomePage() {
     <div className="flex flex-col min-h-screen bg-background text-text-primary">
       <Navbar />
 
-      <main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 pt-4 pb-16 space-y-10">
+      <main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4 pb-16 space-y-6 sm:space-y-10">
         {/* 1. CINEMATIC HERO BANNER */}
         <HeroBanner item={heroItem} />
 
@@ -73,7 +73,7 @@ export default async function HomePage() {
             seeAllHref="/continue-watching"
           >
             {continueWatching.map((item) => (
-              <div key={item.id} className="w-36 sm:w-44 md:w-52 shrink-0">
+              <div key={item.id} className="w-[135px] sm:w-[170px] md:w-[200px] shrink-0">
                 <PosterCard
                   id={item.id}
                   title={item.title}
@@ -91,7 +91,7 @@ export default async function HomePage() {
         )}
 
         {/* 4. GENRES QUICK SELECTOR BAR */}
-        <div className="space-y-3">
+        <div className="space-y-3 py-1">
           <div className="flex items-center justify-between text-xs font-bold text-text-muted uppercase tracking-widest px-1">
             <span className="flex items-center gap-1.5 text-red-500">
               <Compass className="w-4 h-4" />
@@ -99,18 +99,18 @@ export default async function HomePage() {
             </span>
             <Link
               href="/genres"
-              className="text-text-muted hover:text-white transition cursor-pointer text-xs font-semibold"
+              className="text-text-secondary hover:text-red-500 transition cursor-pointer text-xs font-bold px-2 py-1 rounded-lg hover:bg-surface-raised"
             >
               View All ›
             </Link>
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+          <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto pb-2 pt-1 no-scrollbar px-0.5">
             {DEMO_GENRES.map((g) => (
               <Link
                 key={g.id}
                 href={`/genres?name=${encodeURIComponent(g.name)}`}
-                className="px-4 py-2 rounded-2xl bg-surface-raised border border-border hover:border-red-600/60 text-xs font-bold text-text-secondary hover:text-text-primary transition shrink-0 cursor-pointer backdrop-blur-md shadow-lg"
+                className="px-4 py-2 rounded-xl sm:rounded-2xl bg-surface-raised border border-border/80 hover:border-red-500/60 text-xs font-bold text-text-secondary hover:text-text-primary transition shrink-0 cursor-pointer backdrop-blur-md shadow-sm min-h-[40px] flex items-center justify-center"
               >
                 {g.name_bn || g.name}
               </Link>
@@ -123,6 +123,7 @@ export default async function HomePage() {
           <ContentRail
             title="Top 10 in Bangladesh Today"
             icon={<Flame className="w-5 h-5 text-red-500" />}
+            seeAllHref="/movies"
           >
             {top10.map((movie, index) => (
               <RankedCard
@@ -148,7 +149,7 @@ export default async function HomePage() {
             seeAllHref="/movies"
           >
             {banglaMovies.map((movie) => (
-              <div key={movie.id} className="w-36 sm:w-44 md:w-52 shrink-0">
+              <div key={movie.id} className="w-[135px] sm:w-[170px] md:w-[200px] shrink-0">
                 <PosterCard
                   id={movie.id}
                   title={movie.title}
@@ -173,7 +174,7 @@ export default async function HomePage() {
             seeAllHref="/movies"
           >
             {trendingMovies.map((movie) => (
-              <div key={movie.id} className="w-36 sm:w-44 md:w-52 shrink-0">
+              <div key={movie.id} className="w-[135px] sm:w-[170px] md:w-[200px] shrink-0">
                 <PosterCard
                   id={movie.id}
                   title={movie.title}
@@ -197,7 +198,7 @@ export default async function HomePage() {
             seeAllHref="/series"
           >
             {seriesList.map((series) => (
-              <div key={series.id} className="w-36 sm:w-44 md:w-52 shrink-0">
+              <div key={series.id} className="w-[135px] sm:w-[170px] md:w-[200px] shrink-0">
                 <PosterCard
                   id={series.id}
                   title={series.title}
@@ -218,11 +219,11 @@ export default async function HomePage() {
         {topRatedMovies.length > 0 && (
           <ContentRail
             title="Top Rated Cinema"
-            icon={<Award className="w-5 h-5 text-amber-400" />}
+            icon={<Award className="w-5 h-5 text-amber-500" />}
             seeAllHref="/movies"
           >
             {topRatedMovies.map((movie) => (
-              <div key={movie.id} className="w-36 sm:w-44 md:w-52 shrink-0">
+              <div key={movie.id} className="w-[135px] sm:w-[170px] md:w-[200px] shrink-0">
                 <PosterCard
                   id={movie.id}
                   title={movie.title}
@@ -242,11 +243,11 @@ export default async function HomePage() {
         {recentlyAdded.length > 0 && (
           <ContentRail
             title="Recently Added"
-            icon={<Clock className="w-5 h-5 text-emerald-400" />}
+            icon={<Clock className="w-5 h-5 text-emerald-500" />}
             seeAllHref="/movies"
           >
             {recentlyAdded.map((movie) => (
-              <div key={movie.id} className="w-36 sm:w-44 md:w-52 shrink-0">
+              <div key={movie.id} className="w-[135px] sm:w-[170px] md:w-[200px] shrink-0">
                 <PosterCard
                   id={movie.id}
                   title={movie.title}
@@ -267,9 +268,10 @@ export default async function HomePage() {
         <ContentRail
           title="Featured Previews"
           icon={<Clapperboard className="w-5 h-5 text-red-500" />}
+          seeAllHref="/movies"
         >
           {movies.slice(0, 8).map((item) => (
-            <div key={item.id} className="w-64 sm:w-72 md:w-80 shrink-0">
+            <div key={item.id} className="w-[240px] sm:w-[290px] md:w-[330px] shrink-0">
               <LandscapeCard
                 id={item.id}
                 title={item.title}

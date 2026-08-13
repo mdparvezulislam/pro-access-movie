@@ -8,9 +8,6 @@ import {
   Download,
   Edit,
   Search,
-  CheckCircle2,
-  Clock,
-  Archive,
   Star,
   Eye,
   Trash2,
@@ -131,35 +128,6 @@ export function MoviesAdminView({ movies: initialMovies }: MoviesAdminViewProps)
       toast.error("Bulk update failed.");
     } finally {
       setIsUpdating(false);
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "published":
-        return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 w-fit">
-            <CheckCircle2 className="h-3 w-3" /> Published
-          </span>
-        );
-      case "draft":
-        return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1 w-fit">
-            <Clock className="h-3 w-3" /> Draft
-          </span>
-        );
-      case "archived":
-        return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-500/10 text-zinc-400 border border-zinc-500/30 flex items-center gap-1 w-fit">
-            <Archive className="h-3 w-3" /> Archived
-          </span>
-        );
-      default:
-        return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-surface-raised text-text-muted border border-border capitalize w-fit">
-            {status}
-          </span>
-        );
     }
   };
 

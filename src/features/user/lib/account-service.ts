@@ -95,35 +95,25 @@ export async function updateUserProfile(payload: {
   }
 }
 
+import { getUserWatchHistory as getCanonicalWatchHistory, clearWatchHistoryAction } from "./history";
+
 /**
- * Fetches watch history for the authenticated user.
+ * Fetches watch history for the authenticated user using the canonical history service.
  */
 export async function getUserWatchHistory(limit = 20): Promise<WatchHistoryItem[]> {
   try {
-    const user = await getCurrentUser();
-    if (!user) return [];
-
-    const supabase = await createServerClient();
-    const { data: history } = await supabase
-      .from("user_history")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("updated_at", { ascending: false })
-      .limit(limit);
-
-    if (!history) return [];
-
-    return history.map((item) => ({
+    const canonicalItems = await getCanonicalWatchHistory();
+    return canonicalItems.slice(0, limit).map((item) => ({
       id: item.id,
-      contentId: item.content_id,
-      contentType: item.content_type || "movie",
-      title: item.title || "Untitled Content",
-      slug: item.slug || "",
-      posterUrl: item.poster_url || "",
-      progressSeconds: item.progress_seconds || 0,
-      durationSeconds: item.duration_seconds || 0,
-      completed: item.completed || false,
-      updatedAt: item.updated_at || new Date().toISOString(),
+      contentId: item.id,
+      contentType: item.type,
+      title: item.title,
+      slug: item.slug,
+      posterUrl: item.posterUrl || "",
+      progressSeconds: item.progressSeconds,
+      durationSeconds: item.durationSeconds,
+      completed: item.completed,
+      updatedAt: item.updatedAt,
     }));
   } catch (err) {
     console.error("Error fetching watch history:", err);
@@ -132,28 +122,12 @@ export async function getUserWatchHistory(limit = 20): Promise<WatchHistoryItem[
 }
 
 /**
- * Deletes an individual watch history item or clears all history for user.
+ * Deletes watch history for user using canonical history action.
  */
-export async function clearUserWatchHistory(historyId?: string): Promise<boolean> {
+export async function clearUserWatchHistory(_historyId?: string): Promise<boolean> {
   try {
-    const user = await getCurrentUser();
-    if (!user) return false;
-
-    const supabase = await createServerClient();
-    if (historyId) {
-      const { error } = await supabase
-        .from("user_history")
-        .delete()
-        .eq("id", historyId)
-        .eq("user_id", user.id);
-      return !error;
-    } else {
-      const { error } = await supabase
-        .from("user_history")
-        .delete()
-        .eq("user_id", user.id);
-      return !error;
-    }
+    const res = await clearWatchHistoryAction();
+    return res.success;
   } catch (err) {
     console.error("Error clearing user watch history:", err);
     return false;

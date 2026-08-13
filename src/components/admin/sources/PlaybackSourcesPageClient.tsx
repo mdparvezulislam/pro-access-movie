@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Film, Tv, PlaySquare, Server } from "lucide-react";
+import { Film, Tv, Server } from "lucide-react";
 import { MediaSourceStudio } from "@/components/admin/sources/MediaSourceStudio";
 import { ContentSourceType } from "@/types/sources";
 

@@ -35,7 +35,7 @@ export function PosterCard({
     <Link
       href={href}
       onClick={onClick}
-      className="group relative rounded-xl bg-surface-raised border border-border overflow-hidden cursor-pointer hover:border-red-600/60 hover:shadow-2xl hover:shadow-red-600/20 transition-all duration-300 transform hover:-translate-y-1 block"
+      className="group relative rounded-xl sm:rounded-2xl bg-surface-raised border border-border/60 overflow-hidden cursor-pointer hover:border-red-600/60 hover:shadow-2xl hover:shadow-red-600/20 transition-all duration-300 transform hover:-translate-y-1 block h-full"
     >
       <div className="aspect-[2/3] w-full overflow-hidden bg-surface-base relative">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -45,7 +45,7 @@ export function PosterCard({
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-95 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-85 group-hover:opacity-95 transition-opacity" />
 
         {badgeText && (
           <div className="absolute top-2 left-2 z-10">
@@ -60,20 +60,20 @@ export function PosterCard({
             <Play className="h-5 w-5 fill-current ml-0.5" />
           </div>
         </div>
-      </div>
 
-      <div className="absolute bottom-0 inset-x-0 p-3 space-y-1 z-10">
-        <div className="flex items-center justify-between text-[10px] text-text-muted font-medium">
-          <span>{releaseYear || 2024}</span>
-          {rating && (
-            <span className="text-amber-400 font-bold flex items-center gap-0.5">
-              <Star className="w-3 h-3 fill-current" /> {rating}
-            </span>
-          )}
+        <div className="absolute bottom-0 inset-x-0 p-2.5 sm:p-3 space-y-0.5 z-10">
+          <div className="flex items-center justify-between text-[10px] sm:text-xs text-neutral-300 font-semibold">
+            <span>{releaseYear || 2024}</span>
+            {rating && (
+              <span className="text-amber-400 font-extrabold flex items-center gap-0.5">
+                <Star className="w-3 h-3 fill-current" /> {rating}
+              </span>
+            )}
+          </div>
+          <h3 className="text-xs sm:text-sm font-extrabold text-white group-hover:text-red-400 transition truncate drop-shadow-sm">
+            {displayTitle}
+          </h3>
         </div>
-        <h3 className="text-xs font-bold text-text-primary group-hover:text-red-400 transition truncate">
-          {displayTitle}
-        </h3>
       </div>
     </Link>
   );

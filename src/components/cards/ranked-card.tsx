@@ -29,15 +29,15 @@ export function RankedCard({
     <Link
       href={href}
       onClick={onClick}
-      className="group relative flex items-center cursor-pointer select-none shrink-0"
+      className="group relative flex items-center cursor-pointer select-none shrink-0 py-2"
     >
       {/* Big Ranking Number */}
-      <span className="text-7xl md:text-9xl font-black italic tracking-tighter text-neutral-800 dark:text-neutral-800/90 group-hover:text-red-600 transition-colors z-10 -mr-6 md:-mr-10 drop-shadow-xl select-none leading-none">
+      <span className="text-6xl sm:text-8xl md:text-9xl font-black italic tracking-tighter bg-gradient-to-b from-neutral-800 via-neutral-600 to-neutral-400 dark:from-white dark:via-neutral-400 dark:to-neutral-800 bg-clip-text text-transparent group-hover:from-red-600 group-hover:to-rose-600 transition-all duration-300 z-10 -mr-5 sm:-mr-8 md:-mr-10 select-none leading-none drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
         {rank}
       </span>
 
       {/* Poster Card */}
-      <div className="relative w-28 md:w-40 aspect-[2/3] rounded-xl bg-surface-raised border border-border overflow-hidden shadow-2xl group-hover:border-red-600/60 transition-all duration-300 z-0 transform group-hover:-translate-y-1">
+      <div className="relative w-[125px] sm:w-[155px] md:w-[180px] aspect-[2/3] rounded-xl sm:rounded-2xl bg-surface-raised border border-border/60 overflow-hidden shadow-2xl group-hover:border-red-600/60 transition-all duration-300 z-0 transform group-hover:-translate-y-1">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={posterUrl}
@@ -45,9 +45,9 @@ export function RankedCard({
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-        <div className="absolute bottom-2 left-2 right-2 z-10">
-          <p className="text-[11px] font-bold text-white truncate">{displayTitle}</p>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
+        <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10">
+          <p className="text-xs font-extrabold text-white truncate drop-shadow-sm">{displayTitle}</p>
         </div>
       </div>
     </Link>

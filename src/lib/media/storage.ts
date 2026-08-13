@@ -13,7 +13,7 @@ import {
 } from "@/types/media";
 import { validateMediaUpload } from "./validation";
 
-export type { FlexBucket, MediaContentType, MediaFolder, MediaFileRecord, UploadMediaParams };
+export type { FlexBucket, MediaContentType, MediaFolder, MediaFileRecord, UploadMediaParams, ImageVariantOptions };
 
 import { getPublicMediaUrl, getOptimizedMediaProps, DEFAULT_PLACEHOLDERS } from "./utils";
 

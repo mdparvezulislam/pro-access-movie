@@ -15,6 +15,7 @@ import {
   Settings,
   AlertTriangle,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
 import { PlaybackSourceItem } from "@/lib/content/public-catalog";
 import { savePlaybackPosition, getPlaybackPosition } from "@/features/user/lib/playback-tracker";
@@ -59,16 +60,18 @@ export function FlexVideoPlayer({
   const [doubleTapAnimation, setDoubleTapAnimation] = useState<"forward" | "backward" | null>(null);
   const [showAdGate, setShowAdGate] = useState(false);
   const [gateCreative, setGateCreative] = useState<AdCreative | null>(null);
+  const [isPipSupported] = useState(() => typeof document !== "undefined" && "pictureInPictureEnabled" in document && Boolean(document.pictureInPictureEnabled));
 
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastTapRef = useRef<{ time: number; x: number }>({ time: 0, x: 0 });
+  const pendingSeekPositionRef = useRef<number | null>(null);
 
   const activeSource = sources[activeSourceIndex] || null;
   const isEmbed = activeSource ? !activeSource.url.endsWith(".mp4") && !activeSource.url.endsWith(".m3u8") && activeSource.url.includes("http") : true;
 
-  // Auto-hide controls
+  // Auto-hide controls handler
   const resetControlsTimeout = useCallback(() => {
     setShowControls(true);
     if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
@@ -81,13 +84,36 @@ export function FlexVideoPlayer({
     }, 3500);
   }, [isPlaying]);
 
-  // Load saved playback position
+  // Load saved playback position on initial mount
   useEffect(() => {
     const savedPos = getPlaybackPosition(contentId);
-    if (savedPos > 0 && videoRef.current) {
-      videoRef.current.currentTime = savedPos;
+    if (savedPos > 0) {
+      pendingSeekPositionRef.current = savedPos;
     }
   }, [contentId]);
+
+  // Save position on tab close / component unmount
+  useEffect(() => {
+    const handleSave = () => {
+      if (videoRef.current && videoRef.current.currentTime > 0) {
+        savePlaybackPosition({
+          contentId,
+          slug,
+          title,
+          type,
+          positionSeconds: Math.floor(videoRef.current.currentTime),
+          durationSeconds: Math.floor(videoRef.current.duration || 0),
+          updatedAt: new Date().toISOString(),
+        });
+      }
+    };
+
+    window.addEventListener("beforeunload", handleSave);
+    return () => {
+      handleSave();
+      window.removeEventListener("beforeunload", handleSave);
+    };
+  }, [contentId, slug, title, type]);
 
   // Action Handlers
   const togglePlay = useCallback(() => {
@@ -139,14 +165,25 @@ export function FlexVideoPlayer({
   }, []);
 
   const togglePiP = useCallback(async () => {
-    if (videoRef.current && document.pictureInPictureEnabled) {
+    if (videoRef.current && isPipSupported) {
       if (document.pictureInPictureElement) {
         await document.exitPictureInPicture().catch(() => {});
       } else {
         await videoRef.current.requestPictureInPicture().catch(() => {});
       }
     }
-  }, []);
+  }, [isPipSupported]);
+
+  // Server Source Switch with Position Preservation
+  const handleServerSwitch = (index: number) => {
+    if (videoRef.current && videoRef.current.currentTime > 0) {
+      pendingSeekPositionRef.current = videoRef.current.currentTime;
+    }
+    setHasError(false);
+    setIsLoading(true);
+    setActiveSourceIndex(index);
+    setShowServerMenu(false);
+  };
 
   // Keyboard Shortcuts
   useEffect(() => {
@@ -210,7 +247,6 @@ export function FlexVideoPlayer({
         setShowAdGate(true);
         recordAdGateShown(contentId);
 
-        // Fetch ad creative
         fetch(`/api/ads/track?placement=player_mid_roll`)
           .then((r) => r.json())
           .then((d) => setGateCreative(d.creative))
@@ -232,6 +268,19 @@ export function FlexVideoPlayer({
     }
   };
 
+  const handleLoadedMetadata = () => {
+    setIsLoading(false);
+    if (videoRef.current) {
+      const dur = videoRef.current.duration || 0;
+      setDuration(dur);
+
+      if (pendingSeekPositionRef.current && pendingSeekPositionRef.current < dur) {
+        videoRef.current.currentTime = pendingSeekPositionRef.current;
+        pendingSeekPositionRef.current = null;
+      }
+    }
+  };
+
   const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = Number(e.target.value);
     if (videoRef.current) {
@@ -240,11 +289,14 @@ export function FlexVideoPlayer({
     }
   };
 
-  const handleSpeedChange = (speed: number) => {
+  useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.playbackRate = speed;
-      setPlaybackSpeed(speed);
+      videoRef.current.playbackRate = playbackSpeed;
     }
+  }, [playbackSpeed]);
+
+  const handleSpeedChange = (speed: number) => {
+    setPlaybackSpeed(speed);
     setShowSettings(false);
   };
 
@@ -288,8 +340,10 @@ export function FlexVideoPlayer({
           ref={videoRef}
           src={activeSource.url}
           poster={posterUrl}
+          preload="metadata"
+          playsInline
           onTimeUpdate={handleTimeUpdate}
-          onLoadedMetadata={() => setIsLoading(false)}
+          onLoadedMetadata={handleLoadedMetadata}
           onWaiting={() => setIsLoading(true)}
           onPlaying={() => {
             setIsLoading(false);
@@ -347,17 +401,28 @@ export function FlexVideoPlayer({
             <h4 className="text-base font-bold text-white">Playback Error</h4>
             <p className="text-xs text-text-muted">The current streaming server could not be loaded.</p>
           </div>
-          {sources.length > 1 && (
+          <div className="flex items-center gap-3">
             <button
               onClick={() => {
                 setHasError(false);
-                setActiveSourceIndex((prev) => (prev + 1) % sources.length);
+                setIsLoading(true);
+                if (videoRef.current) {
+                  videoRef.current.load();
+                }
               }}
-              className="px-4 py-2 rounded-xl bg-red-600 text-white font-bold text-xs shadow-lg hover:bg-red-700 transition-colors"
+              className="px-4 py-2 rounded-xl bg-surface-raised border border-border text-white font-bold text-xs flex items-center gap-1.5 hover:bg-surface-raised/80 transition-colors"
             >
-              Switch to Next Server
+              <RefreshCw className="h-3.5 w-3.5" /> Retry Server
             </button>
-          )}
+            {sources.length > 1 && (
+              <button
+                onClick={() => handleServerSwitch((activeSourceIndex + 1) % sources.length)}
+                className="px-4 py-2 rounded-xl bg-red-600 text-white font-bold text-xs shadow-lg hover:bg-red-700 transition-colors"
+              >
+                Switch Server
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -368,14 +433,24 @@ export function FlexVideoPlayer({
             showControls ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
         >
-          {/* Top Bar: Title & Server Selection */}
+          {/* Top Bar: Title, Quality Badge & Server Selection */}
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-white truncate max-w-md">{title}</h3>
+            <div className="flex items-center gap-2 max-w-md truncate">
+              <h3 className="text-sm font-bold text-white truncate">{title}</h3>
+              {activeSource.quality && (
+                <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-red-600/80 text-white border border-red-500/40 uppercase">
+                  {activeSource.quality}
+                </span>
+              )}
+            </div>
+
             {sources.length > 1 && (
               <div className="relative">
                 <button
                   onClick={() => setShowServerMenu(!showServerMenu)}
-                  className="px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-xs font-bold text-white flex items-center gap-1.5 hover:bg-white/10 transition-colors"
+                  aria-label="Select Streaming Server"
+                  title="Select Streaming Server"
+                  className="px-3.5 py-2 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-xs font-bold text-white flex items-center gap-1.5 hover:bg-white/10 transition-colors min-h-[44px] min-w-[44px]"
                 >
                   <Server className="h-3.5 w-3.5 text-red-400" />
                   <span>{activeSource.source_name}</span>
@@ -387,12 +462,8 @@ export function FlexVideoPlayer({
                     {sources.map((s, idx) => (
                       <button
                         key={s.id}
-                        onClick={() => {
-                          setActiveSourceIndex(idx);
-                          setShowServerMenu(false);
-                          setHasError(false);
-                        }}
-                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center justify-between ${
+                        onClick={() => handleServerSwitch(idx)}
+                        className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium flex items-center justify-between min-h-[44px] ${
                           idx === activeSourceIndex ? "bg-red-600 text-white font-bold" : "text-text-secondary hover:bg-surface-raised"
                         }`}
                       >
@@ -407,7 +478,7 @@ export function FlexVideoPlayer({
           </div>
 
           {/* Bottom Bar Controls */}
-          <div className="space-y-2">
+          <div className="space-y-2 pb-safe">
             {/* Progress Bar Slider */}
             <input
               type="range"
@@ -415,18 +486,29 @@ export function FlexVideoPlayer({
               max={duration || 100}
               value={currentTime}
               onChange={handleSeekChange}
+              aria-label="Video Seek Bar"
               className="w-full h-1.5 bg-white/20 accent-red-500 rounded-lg cursor-pointer hover:h-2.5 transition-all"
             />
 
             {/* Controls Buttons Bar */}
             <div className="flex items-center justify-between text-white text-xs font-semibold">
               <div className="flex items-center gap-3">
-                <button onClick={togglePlay} className="p-2 rounded-full hover:bg-white/10 transition-colors">
+                <button
+                  onClick={togglePlay}
+                  aria-label={isPlaying ? "Pause Video" : "Play Video"}
+                  title={isPlaying ? "Pause (Space/K)" : "Play (Space/K)"}
+                  className="p-2.5 rounded-full hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                >
                   {isPlaying ? <Pause className="h-5 w-5 fill-white" /> : <Play className="h-5 w-5 fill-white ml-0.5" />}
                 </button>
 
                 <div className="flex items-center gap-2">
-                  <button onClick={toggleMute} className="p-1.5 rounded-full hover:bg-white/10 transition-colors">
+                  <button
+                    onClick={toggleMute}
+                    aria-label={isMuted ? "Unmute Audio" : "Mute Audio"}
+                    title={isMuted ? "Unmute (M)" : "Mute (M)"}
+                    className="p-2 rounded-full hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  >
                     {isMuted || volume === 0 ? <VolumeX className="h-4 w-4 text-red-400" /> : <Volume2 className="h-4 w-4" />}
                   </button>
                   <input
@@ -440,6 +522,7 @@ export function FlexVideoPlayer({
                       setVolume(v);
                       if (videoRef.current) videoRef.current.volume = v;
                     }}
+                    aria-label="Volume Control"
                     className="w-16 h-1 bg-white/20 accent-white rounded cursor-pointer hidden sm:block"
                   />
                 </div>
@@ -454,19 +537,21 @@ export function FlexVideoPlayer({
                 <div className="relative">
                   <button
                     onClick={() => setShowSettings(!showSettings)}
-                    className="p-2 rounded-full hover:bg-white/10 transition-colors text-white/80 hover:text-white"
+                    aria-label="Playback Settings"
+                    title="Playback Settings"
+                    className="p-2.5 rounded-full hover:bg-white/10 transition-colors text-white/80 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 min-h-[44px] min-w-[44px] flex items-center justify-center"
                   >
                     <Settings className="h-4 w-4" />
                   </button>
 
                   {showSettings && (
-                    <div className="absolute right-0 bottom-10 w-36 rounded-xl bg-surface-base border border-border p-2 shadow-2xl z-40 space-y-1">
+                    <div className="absolute right-0 bottom-12 w-36 rounded-xl bg-surface-base border border-border p-2 shadow-2xl z-40 space-y-1">
                       <div className="text-[10px] font-bold text-text-muted uppercase px-2 py-1">Speed</div>
                       {SPEED_OPTIONS.map((spd) => (
                         <button
                           key={spd}
                           onClick={() => handleSpeedChange(spd)}
-                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium ${
+                          className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium min-h-[44px] flex items-center ${
                             playbackSpeed === spd ? "bg-red-600 text-white font-bold" : "text-text-secondary hover:bg-surface-raised"
                           }`}
                         >
@@ -477,11 +562,23 @@ export function FlexVideoPlayer({
                   )}
                 </div>
 
-                <button onClick={togglePiP} className="p-2 rounded-full hover:bg-white/10 transition-colors text-white/80 hover:text-white hidden sm:block">
-                  <PictureInPicture className="h-4 w-4" />
-                </button>
+                {isPipSupported && (
+                  <button
+                    onClick={togglePiP}
+                    aria-label="Picture in Picture"
+                    title="Picture in Picture (P)"
+                    className="p-2.5 rounded-full hover:bg-white/10 transition-colors text-white/80 hover:text-white hidden sm:flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 min-h-[44px] min-w-[44px]"
+                  >
+                    <PictureInPicture className="h-4 w-4" />
+                  </button>
+                )}
 
-                <button onClick={toggleFullscreen} className="p-2 rounded-full hover:bg-white/10 transition-colors">
+                <button
+                  onClick={toggleFullscreen}
+                  aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                  title={isFullscreen ? "Exit Fullscreen (F)" : "Fullscreen (F)"}
+                  className="p-2.5 rounded-full hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                >
                   {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
                 </button>
               </div>
@@ -506,3 +603,4 @@ export function FlexVideoPlayer({
     </div>
   );
 }
+
