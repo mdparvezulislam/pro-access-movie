@@ -10,6 +10,7 @@ export interface PlaybackSource {
   content_type: ContentSourceType;
   content_id: string;
   source_name: string;
+  label?: string;
   url: string;
   format?: StreamFormat;
   quality: VideoQuality;
@@ -27,6 +28,7 @@ export interface CreatePlaybackSourceInput {
   content_type: ContentSourceType;
   content_id: string;
   source_name: string;
+  label?: string;
   url: string;
   format?: StreamFormat;
   quality?: VideoQuality;
@@ -48,6 +50,7 @@ export interface DownloadSource {
   file_type?: DownloadFileType;
   resolution?: string | null;
   file_size_bytes?: number | null;
+  size_bytes?: number | null;
   language: string;
   priority: number;
   is_active: boolean;
@@ -64,8 +67,8 @@ export interface CreateDownloadSourceInput {
   file_type?: DownloadFileType;
   resolution?: string;
   file_size_bytes?: number;
+  size_bytes?: number;
   language?: string;
   priority?: number;
   is_active?: boolean;
 }
-

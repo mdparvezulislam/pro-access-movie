@@ -18,6 +18,8 @@ const inter = Inter({
   display: "swap",
 });
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: {
     default: "PRO ACCESS MOVIE — Premium Streaming Platform",
@@ -25,7 +27,7 @@ export const metadata: Metadata = {
   },
   description: "Bangladesh-focused premium streaming platform for movies, series, and exclusive content.",
   metadataBase: new URL("https://proaccessmovie.com"),
-  keywords: ["streaming", "movies", "TV series", "Bengali cinema", "cinema", "PRO ACCESS MOVIE"],
+  keywords: "streaming, movies, TV series, Bengali cinema, cinema, PRO ACCESS MOVIE",
 };
 
 export default function RootLayout({

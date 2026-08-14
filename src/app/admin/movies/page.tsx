@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: "Manage movies catalog, metadata imports, posters, and publishing status.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminMoviesPage() {
   await requireAdminAuth("/admin/movies");
 

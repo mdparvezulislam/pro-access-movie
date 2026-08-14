@@ -4,30 +4,38 @@ import React, { useState } from "react";
 import {
   Sparkles,
   Bot,
-  CheckCircle2,
-  RefreshCw,
-  X,
   FileText,
   Search,
   Tag,
   Loader2,
-  ShieldCheck,
+  Wand2,
+  Languages,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AIOperation, TargetLanguage } from "@/types/ai";
 import { toast } from "sonner";
+import { AIPreviewModal, PreviewDiffField } from "./AIPreviewModal";
 
 interface AIAssistantPanelProps {
   title: string;
   releaseYear?: number;
   existingDescription?: string;
   existingDescriptionBn?: string;
+  existingTagline?: string;
+  existingSeoTitle?: string;
+  existingSeoDescription?: string;
+  existingKeywords?: string[];
   existingGenres?: string[];
   contentId?: string;
-  contentType?: "movie" | "series" | "episode";
+  contentType?: "movie" | "series" | "season" | "episode";
+  seriesTitle?: string;
+  seasonNumber?: number;
+  episodeNumber?: number;
   onApplyDescription?: (descEn: string, descBn: string, tagline?: string) => void;
-  onApplySeo?: (seoTitle: string, seoDesc: string, keywords: string[]) => void;
+  onApplySeo?: (seoTitle: string, seoDesc: string, keywords: string[], slug?: string) => void;
   onApplyClassification?: (genres: string[], rating: string) => void;
+  onApplyCleanedText?: (cleanedText: string) => void;
+  onApplyTranslation?: (translatedText: string, targetLang: string) => void;
 }
 
 function getStr(obj: Record<string, unknown> | null, key: string): string {
@@ -43,22 +51,40 @@ export function AIAssistantPanel({
   releaseYear,
   existingDescription = "",
   existingDescriptionBn = "",
+  existingTagline = "",
+  existingSeoTitle = "",
+  existingSeoDescription = "",
+  existingKeywords = [],
   existingGenres = [],
   contentId,
   contentType = "movie",
+  seriesTitle,
+  seasonNumber,
+  episodeNumber,
   onApplyDescription,
   onApplySeo,
   onApplyClassification,
+  onApplyCleanedText,
+  onApplyTranslation,
 }: AIAssistantPanelProps) {
   const [activeTab, setActiveTab] = useState<AIOperation>("generate_description");
-  const [language, setLanguage] = useState<TargetLanguage>("bn");
+  const [targetLang, setTargetLang] = useState<TargetLanguage>("bn");
+  const [customInstructions, setCustomInstructions] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  
+  // Modal Preview States
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [aiResult, setAiResult] = useState<Record<string, unknown> | null>(null);
   const [isMockFallback, setIsMockFallback] = useState(false);
+  const [previewFields, setPreviewFields] = useState<PreviewDiffField[]>([]);
 
   const handleGenerate = async (op: AIOperation = activeTab) => {
+    if (!title || title.trim().length === 0) {
+      toast.error("Title is required to run AI assistant.");
+      return;
+    }
+
     setIsGenerating(true);
-    setAiResult(null);
 
     try {
       const res = await fetch("/api/admin/ai/generate", {
@@ -69,10 +95,16 @@ export function AIAssistantPanel({
           title,
           releaseYear,
           existingDescription,
+          existingDescriptionBn,
+          existingText: existingDescriptionBn || existingDescription,
           genres: existingGenres,
-          targetLanguage: language,
+          targetLanguage: targetLang,
           contentId,
           contentType,
+          seriesTitle,
+          seasonNumber,
+          episodeNumber,
+          customInstructions: customInstructions.trim() || undefined,
         }),
       });
 
@@ -81,25 +113,122 @@ export function AIAssistantPanel({
         throw new Error(data.error || "AI generation failed.");
       }
 
-      setAiResult(data.data);
+      const resultData = data.data as Record<string, unknown>;
+      setAiResult(resultData);
       setIsMockFallback(Boolean(data.isMockFallback));
+
+      // Build field comparison diffs for preview modal
+      const fields: PreviewDiffField[] = [];
+
+      if (op === "generate_description" || op === "improve_description") {
+        fields.push(
+          {
+            label: "Bengali Synopsis (বাংলা)",
+            currentValue: existingDescriptionBn,
+            suggestedValue: getStr(resultData, "descriptionBn"),
+            isBangla: true,
+          },
+          {
+            label: "English Synopsis",
+            currentValue: existingDescription,
+            suggestedValue: getStr(resultData, "description"),
+          },
+          {
+            label: "Tagline",
+            currentValue: existingTagline,
+            suggestedValue: getStr(resultData, "tagline"),
+          }
+        );
+      } else if (op === "generate_seo") {
+        fields.push(
+          {
+            label: "SEO Meta Title",
+            currentValue: existingSeoTitle,
+            suggestedValue: getStr(resultData, "seoTitle"),
+          },
+          {
+            label: "SEO Meta Description",
+            currentValue: existingSeoDescription,
+            suggestedValue: getStr(resultData, "seoDescription"),
+          },
+          {
+            label: "SEO Keywords",
+            currentValue: existingKeywords,
+            suggestedValue: getArr(resultData, "keywords"),
+          },
+          {
+            label: "URL Slug Suggestion",
+            currentValue: "",
+            suggestedValue: getStr(resultData, "suggestedSlug"),
+          }
+        );
+      } else if (op === "suggest_classification") {
+        fields.push(
+          {
+            label: "Suggested Genres",
+            currentValue: existingGenres,
+            suggestedValue: getArr(resultData, "suggestedGenres"),
+          },
+          {
+            label: "Content Rating",
+            currentValue: "13+",
+            suggestedValue: getStr(resultData, "contentRating") || "13+",
+          }
+        );
+      } else if (op === "clean_content") {
+        fields.push({
+          label: "Cleaned Content Text",
+          currentValue: existingDescription || existingDescriptionBn || title,
+          suggestedValue: getStr(resultData, "cleanedText"),
+          isBangla: Boolean(existingDescriptionBn),
+        });
+      } else if (op === "translate") {
+        fields.push({
+          label: `Translation (${targetLang === "bn" ? "English ➔ Bengali" : "Bengali ➔ English"})`,
+          currentValue: existingDescription || existingDescriptionBn,
+          suggestedValue: getStr(resultData, "translatedText"),
+          isBangla: targetLang === "bn",
+        });
+      } else if (op === "generate_episode_summary") {
+        fields.push(
+          {
+            label: "Episode Short Summary",
+            currentValue: existingDescription.slice(0, 100),
+            suggestedValue: getStr(resultData, "shortSummary"),
+          },
+          {
+            label: "Episode Full Synopsis",
+            currentValue: existingDescription,
+            suggestedValue: getStr(resultData, "fullSummary"),
+          }
+        );
+      } else if (op === "generate_season_summary") {
+        fields.push({
+          label: "Season Overview Arc",
+          currentValue: existingDescription,
+          suggestedValue: getStr(resultData, "seasonOverview"),
+        });
+      }
+
+      setPreviewFields(fields);
+      setIsPreviewOpen(true);
       toast.success(
         data.isMockFallback
-          ? "Generated AI suggestion (Demo Fallback Mode)."
-          : "Generated AI suggestion via OpenRouter."
+          ? "Generated AI suggestions (Demo Fallback Mode)."
+          : "Generated AI suggestions via OpenRouter."
       );
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to generate AI content.";
+      const msg = err instanceof Error ? err.message : "AI service is temporarily unavailable.";
       toast.error(msg);
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleApply = () => {
+  const handleApplyPreview = () => {
     if (!aiResult) return;
 
-    if (activeTab === "generate_description" || activeTab === "localize_bengali") {
+    if (activeTab === "generate_description" || activeTab === "improve_description") {
       if (onApplyDescription) {
         onApplyDescription(
           getStr(aiResult, "description") || existingDescription,
@@ -107,13 +236,14 @@ export function AIAssistantPanel({
           getStr(aiResult, "tagline")
         );
       }
-      toast.success("Applied AI description suggestions to editor!");
+      toast.success("Applied AI description to editor!");
     } else if (activeTab === "generate_seo") {
       if (onApplySeo) {
         onApplySeo(
           getStr(aiResult, "seoTitle"),
           getStr(aiResult, "seoDescription"),
-          getArr(aiResult, "keywords")
+          getArr(aiResult, "keywords"),
+          getStr(aiResult, "suggestedSlug")
         );
       }
       toast.success("Applied AI SEO metadata to editor!");
@@ -124,9 +254,29 @@ export function AIAssistantPanel({
           getStr(aiResult, "contentRating") || "13+"
         );
       }
-      toast.success("Applied AI genres & rating classification!");
+      toast.success("Applied AI genres & classification!");
+    } else if (activeTab === "clean_content") {
+      if (onApplyCleanedText) {
+        onApplyCleanedText(getStr(aiResult, "cleanedText"));
+      }
+      toast.success("Applied cleaned text to editor!");
+    } else if (activeTab === "translate") {
+      if (onApplyTranslation) {
+        onApplyTranslation(getStr(aiResult, "translatedText"), targetLang);
+      }
+      toast.success("Applied AI translation to editor!");
+    } else if (activeTab === "generate_episode_summary" || activeTab === "generate_season_summary") {
+      if (onApplyDescription) {
+        onApplyDescription(
+          getStr(aiResult, "fullSummary") || getStr(aiResult, "seasonOverview"),
+          "",
+          ""
+        );
+      }
+      toast.success("Applied AI summary to editor!");
     }
 
+    setIsPreviewOpen(false);
     setAiResult(null);
   };
 
@@ -150,28 +300,28 @@ export function AIAssistantPanel({
               )}
             </div>
             <p className="text-xs text-text-muted">
-              Enrich descriptions, Bengali localization, SEO metadata, and genres with structured AI verification.
+              Generate localized summaries, SEO metadata, tags, translations, and clean text with admin review before applying.
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value as TargetLanguage)}
+            value={targetLang}
+            onChange={(e) => setTargetLang(e.target.value as TargetLanguage)}
             className="h-8 px-2.5 rounded-lg text-xs font-semibold bg-surface-raised border border-border text-text-primary focus:outline-none"
           >
             <option value="bn">Bengali (বাংলা)</option>
-            <option value="en font-medium">English</option>
+            <option value="en">English</option>
             <option value="banglish">Banglish</option>
           </select>
         </div>
       </div>
 
-      {/* Operation Tabs */}
+      {/* Action Tabs */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
         <button
-          onClick={() => { setActiveTab("generate_description"); setAiResult(null); }}
+          onClick={() => setActiveTab("generate_description")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shrink-0 ${
             activeTab === "generate_description"
               ? "bg-purple-600 text-white font-bold shadow-md"
@@ -179,11 +329,23 @@ export function AIAssistantPanel({
           }`}
         >
           <FileText className="h-3.5 w-3.5" />
-          Descriptions & Taglines
+          Descriptions
         </button>
 
         <button
-          onClick={() => { setActiveTab("generate_seo"); setAiResult(null); }}
+          onClick={() => setActiveTab("improve_description")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shrink-0 ${
+            activeTab === "improve_description"
+              ? "bg-purple-600 text-white font-bold shadow-md"
+              : "text-text-muted hover:text-text-primary hover:bg-surface-raised"
+          }`}
+        >
+          <Wand2 className="h-3.5 w-3.5" />
+          Improve Content
+        </button>
+
+        <button
+          onClick={() => setActiveTab("generate_seo")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shrink-0 ${
             activeTab === "generate_seo"
               ? "bg-purple-600 text-white font-bold shadow-md"
@@ -191,11 +353,11 @@ export function AIAssistantPanel({
           }`}
         >
           <Search className="h-3.5 w-3.5" />
-          SEO & Keywords
+          SEO & Slug
         </button>
 
         <button
-          onClick={() => { setActiveTab("suggest_classification"); setAiResult(null); }}
+          onClick={() => setActiveTab("suggest_classification")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shrink-0 ${
             activeTab === "suggest_classification"
               ? "bg-purple-600 text-white font-bold shadow-md"
@@ -203,22 +365,56 @@ export function AIAssistantPanel({
           }`}
         >
           <Tag className="h-3.5 w-3.5" />
-          Genres & Classification
+          Genres & Tags
         </button>
+
+        <button
+          onClick={() => setActiveTab("translate")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shrink-0 ${
+            activeTab === "translate"
+              ? "bg-purple-600 text-white font-bold shadow-md"
+              : "text-text-muted hover:text-text-primary hover:bg-surface-raised"
+          }`}
+        >
+          <Languages className="h-3.5 w-3.5" />
+          Translate
+        </button>
+
+        {contentType === "episode" && (
+          <button
+            onClick={() => setActiveTab("generate_episode_summary")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shrink-0 ${
+              activeTab === "generate_episode_summary"
+                ? "bg-purple-600 text-white font-bold shadow-md"
+                : "text-text-muted hover:text-text-primary hover:bg-surface-raised"
+            }`}
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            Episode Summary
+          </button>
+        )}
       </div>
 
-      {/* Action Trigger */}
-      {!aiResult && (
-        <div className="p-6 rounded-xl bg-surface-raised border border-border text-center space-y-3">
-          <Sparkles className="h-8 w-8 text-purple-400 mx-auto animate-pulse" />
-          <div className="space-y-1">
-            <h4 className="text-sm font-bold text-text-primary">
-              Generate {activeTab.replace("_", " ")} for &quot;{title}&quot;
-            </h4>
-            <p className="text-xs text-text-muted max-w-md mx-auto">
-              AI suggestions use strict Zod schemas and require admin approval before saving.
-            </p>
-          </div>
+      {/* Prompt Custom Instructions & Trigger Box */}
+      <div className="p-5 rounded-xl bg-surface-raised border border-border space-y-4">
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-text-secondary">
+            Custom AI Guidance / Tone Instructions (Optional)
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. Make it dramatic, emphasize high-octane action, or keep tone formal..."
+            value={customInstructions}
+            onChange={(e) => setCustomInstructions(e.target.value)}
+            disabled={isGenerating}
+            className="w-full h-9 px-3 rounded-lg text-xs bg-surface-base border border-border text-text-primary focus:border-purple-500 focus:outline-none"
+          />
+        </div>
+
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-xs text-text-muted">
+            All AI responses undergo Zod validation and require your preview approval.
+          </p>
 
           <Button
             onClick={() => handleGenerate()}
@@ -226,134 +422,30 @@ export function AIAssistantPanel({
             variant="cinematic"
             className="h-9 text-xs gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white border-0 shadow-lg"
           >
-            {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            <span>{isGenerating ? "Analyzing & Generating..." : "Generate AI Suggestions"}</span>
+            {isGenerating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Generating with OpenRouter...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4" />
+                <span>Run {activeTab.replace("_", " ")}</span>
+              </>
+            )}
           </Button>
         </div>
-      )}
+      </div>
 
-      {/* AI Suggestion Diff & Review Card */}
-      {aiResult && (
-        <div className="space-y-4 p-5 rounded-xl bg-purple-950/20 border border-purple-500/30">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-purple-400" />
-              <span className="text-xs font-bold text-purple-300 uppercase tracking-wider">
-                AI Suggestion Review
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setAiResult(null)}
-                className="h-7 text-xs text-text-muted hover:text-text-primary"
-              >
-                <X className="h-3.5 w-3.5" /> Reject
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleGenerate()}
-                disabled={isGenerating}
-                className="h-7 text-xs gap-1 border-purple-500/30 text-purple-300"
-              >
-                {isGenerating ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-                Regenerate
-              </Button>
-            </div>
-          </div>
-
-          {/* Result Content Details */}
-          {activeTab === "generate_description" && (
-            <div className="space-y-3 text-xs">
-              {getStr(aiResult, "descriptionBn") && (
-                <div className="space-y-1 bg-surface-base p-3 rounded-lg border border-border">
-                  <span className="font-bold text-red-400 uppercase text-[10px]">Bengali Description (বাংলা)</span>
-                  <p className="text-text-primary leading-relaxed font-bangla">{getStr(aiResult, "descriptionBn")}</p>
-                </div>
-              )}
-
-              {getStr(aiResult, "description") && (
-                <div className="space-y-1 bg-surface-base p-3 rounded-lg border border-border">
-                  <span className="font-bold text-text-muted uppercase text-[10px]">English Description</span>
-                  <p className="text-text-secondary leading-relaxed">{getStr(aiResult, "description")}</p>
-                </div>
-              )}
-
-              {getStr(aiResult, "tagline") && (
-                <div className="text-[11px] italic text-purple-300">
-                  Tagline: &quot;{getStr(aiResult, "tagline")}&quot;
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === "generate_seo" && (
-            <div className="space-y-3 text-xs">
-              <div className="space-y-1 bg-surface-base p-3 rounded-lg border border-border">
-                <span className="font-bold text-text-muted uppercase text-[10px]">SEO Title</span>
-                <p className="font-bold text-text-primary">{getStr(aiResult, "seoTitle")}</p>
-              </div>
-
-              <div className="space-y-1 bg-surface-base p-3 rounded-lg border border-border">
-                <span className="font-bold text-text-muted uppercase text-[10px]">Meta Description</span>
-                <p className="text-text-secondary">{getStr(aiResult, "seoDescription")}</p>
-              </div>
-
-              {getArr(aiResult, "keywords").length > 0 && (
-                <div className="flex flex-wrap gap-1 pt-1">
-                  {getArr(aiResult, "keywords").map((kw: string) => (
-                    <span key={kw} className="px-2 py-0.5 rounded bg-purple-900/40 text-purple-200 text-[10px] border border-purple-500/30">
-                      {kw}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === "suggest_classification" && (
-            <div className="space-y-3 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-text-muted">Content Rating:</span>
-                <span className="px-2 py-0.5 rounded bg-red-600 text-white font-bold text-xs">
-                  {getStr(aiResult, "contentRating") || "13+"}
-                </span>
-                {getStr(aiResult, "ageRatingReason") && (
-                  <span className="text-text-muted italic">({getStr(aiResult, "ageRatingReason")})</span>
-                )}
-              </div>
-
-              {getArr(aiResult, "suggestedGenres").length > 0 && (
-                <div className="space-y-1">
-                  <span className="font-bold text-text-muted uppercase text-[10px]">Suggested Genres</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {getArr(aiResult, "suggestedGenres").map((g: string) => (
-                      <span key={g} className="px-2.5 py-1 rounded bg-surface-base text-text-primary border border-border text-xs font-semibold">
-                        {g}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Accept & Apply Button */}
-          <div className="pt-2 flex justify-end">
-            <Button
-              onClick={handleApply}
-              variant="cinematic"
-              className="h-8 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white border-0"
-            >
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>Accept & Apply to Form</span>
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* Preview Modal Component */}
+      <AIPreviewModal
+        isOpen={isPreviewOpen}
+        operationTitle={activeTab.replace("_", " ")}
+        fields={previewFields}
+        isMockFallback={isMockFallback}
+        onApply={handleApplyPreview}
+        onCancel={() => setIsPreviewOpen(false)}
+      />
     </div>
   );
 }

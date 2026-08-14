@@ -3,6 +3,8 @@ import { Navbar } from "@/components/common/navbar";
 import { Footer } from "@/components/common/footer";
 import { LayoutGrid, Layers } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function CategoriesPage() {
   const categories = [
     { id: "c1", name: "Bengali Cinema", nameBn: "বাংলা সিনেমা", backdrop: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop", count: 12 },

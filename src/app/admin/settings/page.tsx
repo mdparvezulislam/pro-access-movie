@@ -1,16 +1,15 @@
 import { requireAdminAuth } from "@/features/auth/lib/auth-helpers";
-import { AdminPageShell } from "@/components/admin/admin-page-shell";
-import { Settings } from "lucide-react";
+import { SettingsManager } from "@/components/admin/settings/SettingsManager";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Global Settings | Admin Studio | PRO ACCESS MOVIE",
+};
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
   await requireAdminAuth("/admin/settings");
 
-  return (
-    <AdminPageShell
-      title="Application Settings"
-      description="Configure platform defaults, OpenRouter API keys, Supabase storage buckets, and global feature flags."
-      icon={Settings}
-      actionLabel="Save Changes"
-    />
-  );
+  return <SettingsManager />;
 }

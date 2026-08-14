@@ -913,33 +913,69 @@ export interface Database {
         Row: {
           id: string
           campaign_id: string | null
+          name: string | null
           title: string
-          type: "banner" | "card" | "video" | "overlay"
+          description: string | null
+          type: "banner" | "card" | "video" | "overlay" | "native" | "interstitial" | "html" | "image"
           media_url: string
           destination_url: string
           cta_text: string | null
+          placement_key: string | null
+          status: "active" | "draft" | "paused" | "archived"
+          priority: number
+          start_at: string | null
+          end_at: string | null
+          frequency_cap: Json | null
+          targeting: Json | null
+          impression_enabled: boolean
+          click_enabled: boolean
+          created_by: string | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           campaign_id?: string | null
+          name?: string | null
           title: string
-          type: "banner" | "card" | "video" | "overlay"
+          description?: string | null
+          type?: "banner" | "card" | "video" | "overlay" | "native" | "interstitial" | "html" | "image"
           media_url: string
           destination_url: string
           cta_text?: string | null
+          placement_key?: string | null
+          status?: "active" | "draft" | "paused" | "archived"
+          priority?: number
+          start_at?: string | null
+          end_at?: string | null
+          frequency_cap?: Json | null
+          targeting?: Json | null
+          impression_enabled?: boolean
+          click_enabled?: boolean
+          created_by?: string | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           campaign_id?: string | null
+          name?: string | null
           title?: string
-          type?: "banner" | "card" | "video" | "overlay"
+          description?: string | null
+          type?: "banner" | "card" | "video" | "overlay" | "native" | "interstitial" | "html" | "image"
           media_url?: string
           destination_url?: string
           cta_text?: string | null
+          placement_key?: string | null
+          status?: "active" | "draft" | "paused" | "archived"
+          priority?: number
+          start_at?: string | null
+          end_at?: string | null
+          frequency_cap?: Json | null
+          targeting?: Json | null
+          impression_enabled?: boolean
+          click_enabled?: boolean
+          created_by?: string | null
           created_at?: string
           updated_at?: string
         }

@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   title: "Edit Movie | Admin Studio | PRO ACCESS MOVIE",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminEditMoviePage({
   params,
 }: {
@@ -33,7 +35,7 @@ export default async function AdminEditMoviePage({
     }
 
     return (
-      <div className="p-6 md:p-8">
+      <div className="w-full p-4 sm:p-6 lg:p-8">
         <ContentEditorForm
           id={demo.id}
           type="movie"
@@ -55,7 +57,7 @@ export default async function AdminEditMoviePage({
   }
 
   return (
-    <div className="p-6 md:p-8">
+    <div className="w-full p-4 sm:p-6 lg:p-8">
       <ContentEditorForm
         id={movie.id}
         type="movie"

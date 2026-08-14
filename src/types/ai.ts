@@ -1,8 +1,13 @@
 export type AIOperation =
   | "generate_description"
-  | "localize_bengali"
+  | "improve_description"
   | "generate_seo"
   | "suggest_classification"
+  | "clean_content"
+  | "translate"
+  | "generate_episode_summary"
+  | "generate_season_summary"
+  | "localize_bengali"
   | "enhance_text";
 
 export type TargetLanguage = "en" | "bn" | "banglish";
@@ -13,10 +18,16 @@ export interface AIRequestParams {
   originalTitle?: string;
   releaseYear?: number;
   existingDescription?: string;
+  existingDescriptionBn?: string;
+  existingText?: string;
   genres?: string[];
   targetLanguage?: TargetLanguage;
+  sourceLanguage?: "en" | "bn" | "auto";
   contentId?: string;
-  contentType?: "movie" | "series" | "episode";
+  contentType?: "movie" | "series" | "season" | "episode";
+  seriesTitle?: string;
+  seasonNumber?: number;
+  episodeNumber?: number;
   customInstructions?: string;
 }
 
@@ -34,6 +45,7 @@ export interface AISeoOutput {
   keywords: string[];
   searchKeywords: string[];
   aliases: string[];
+  suggestedSlug?: string;
 }
 
 export interface AIClassificationOutput {
@@ -47,6 +59,28 @@ export interface AIEnhanceTextOutput {
   enhancedText: string;
   summary: string;
   keyHighlights: string[];
+}
+
+export interface AICleanContentOutput {
+  cleanedText: string;
+  improvementsMade: string[];
+}
+
+export interface AITranslationOutput {
+  translatedText: string;
+  sourceLanguage: string;
+  targetLanguage: string;
+}
+
+export interface AIEpisodeSummaryOutput {
+  shortSummary: string;
+  fullSummary: string;
+  keyEvents: string[];
+}
+
+export interface AISeasonSummaryOutput {
+  seasonOverview: string;
+  keyArcs: string[];
 }
 
 export interface AIResponsePayload<T = unknown> {

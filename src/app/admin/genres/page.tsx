@@ -1,16 +1,15 @@
 import { requireAdminAuth } from "@/features/auth/lib/auth-helpers";
-import { AdminPageShell } from "@/components/admin/admin-page-shell";
-import { Tag } from "lucide-react";
+import { GenresManager } from "@/components/admin/genres/GenresManager";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Genres Management | Admin Studio | PRO ACCESS MOVIE",
+};
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminGenresPage() {
   await requireAdminAuth("/admin/genres");
 
-  return (
-    <AdminPageShell
-      title="Genres"
-      description="Manage movie and TV show genres (Action, Drama, Thriller, Romance, Comedy, Sci-Fi)."
-      icon={Tag}
-      actionLabel="Create Genre"
-    />
-  );
+  return <GenresManager />;
 }

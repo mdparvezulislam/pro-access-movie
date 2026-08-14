@@ -9,7 +9,7 @@ export function MobileBottomNav() {
   const pathname = usePathname();
 
   // Hide mobile bottom nav inside full video player watch page
-  if (pathname.startsWith("/watch/")) {
+  if (pathname && pathname.startsWith("/watch/")) {
     return null;
   }
 
@@ -26,7 +26,7 @@ export function MobileBottomNav() {
       <div className="flex items-center justify-around max-w-md mx-auto">
         {links.map((link) => {
           const Icon = link.icon;
-          const isActive = pathname === link.href;
+          const isActive = pathname ? pathname === link.href : false;
           return (
             <Link
               key={link.href}

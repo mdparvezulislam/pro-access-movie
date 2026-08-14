@@ -30,23 +30,48 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/providers/theme-provider";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/movies", label: "Movies", icon: Film },
-  { href: "/admin/series", label: "Series", icon: Tv },
-  { href: "/admin/seasons", label: "Seasons", icon: Layers },
-  { href: "/admin/episodes", label: "Episodes", icon: ListVideo },
-  { href: "/admin/categories", label: "Categories", icon: Grid },
-  { href: "/admin/genres", label: "Genres", icon: Tag },
-  { href: "/admin/collections", label: "Collections", icon: FolderKanban },
-  { href: "/admin/media", label: "Media Assets", icon: HardDrive },
-  { href: "/admin/playback-sources", label: "Playback Sources", icon: PlaySquare },
-  { href: "/admin/advertisements", label: "Advertisements", icon: Megaphone },
-  { href: "/admin/campaigns", label: "Ad Campaigns", icon: Sparkles },
-  { href: "/admin/users", label: "Users & Roles", icon: Users },
-  { href: "/admin/ai", label: "AI Enrichment", icon: Bot },
-  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
+const navGroups = [
+  {
+    group: "MAIN",
+    items: [
+      { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+    ],
+  },
+  {
+    group: "CONTENT",
+    items: [
+      { href: "/admin/movies", label: "Movies", icon: Film },
+      { href: "/admin/series", label: "Series", icon: Tv },
+      { href: "/admin/seasons", label: "Seasons", icon: Layers },
+      { href: "/admin/episodes", label: "Episodes", icon: ListVideo },
+      { href: "/admin/categories", label: "Categories", icon: Grid },
+      { href: "/admin/genres", label: "Genres", icon: Tag },
+      { href: "/admin/collections", label: "Collections", icon: FolderKanban },
+    ],
+  },
+  {
+    group: "MEDIA",
+    items: [
+      { href: "/admin/media", label: "Media Assets", icon: HardDrive },
+      { href: "/admin/playback-sources", label: "Playback Sources", icon: PlaySquare },
+    ],
+  },
+  {
+    group: "MONETIZATION",
+    items: [
+      { href: "/admin/advertisements", label: "Advertisements", icon: Megaphone },
+      { href: "/admin/campaigns", label: "Ad Campaigns", icon: Sparkles },
+    ],
+  },
+  {
+    group: "SYSTEM",
+    items: [
+      { href: "/admin/users", label: "Users & Roles", icon: Users },
+      { href: "/admin/ai", label: "AI Enrichment", icon: Bot },
+      { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+      { href: "/admin/settings", label: "Settings", icon: Settings },
+    ],
+  },
 ];
 
 export default function AdminLayout({
@@ -75,7 +100,7 @@ export default function AdminLayout({
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="space-y-6 overflow-y-auto pr-1">
+        <div className="space-y-5 overflow-y-auto pr-1">
           {/* Logo Header */}
           <div className="flex items-center justify-between px-2 pt-1">
             <Link
@@ -105,45 +130,52 @@ export default function AdminLayout({
             </button>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/admin" && pathname.startsWith(item.href));
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors",
-                    isActive
-                      ? "bg-red-600/10 text-red-400 font-bold border border-red-500/20"
-                      : "text-text-secondary hover:text-text-primary hover:bg-surface-raised"
-                  )}
-                >
-                  <Icon
-                    className={cn(
-                      "h-4 w-4",
-                      isActive ? "text-red-500" : "text-text-muted"
-                    )}
-                  />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
+          {/* Grouped Navigation */}
+          <nav className="space-y-4 pt-1">
+            {navGroups.map((group) => (
+              <div key={group.group} className="space-y-1">
+                <span className="px-3 text-[10px] font-extrabold text-text-muted uppercase tracking-wider block">
+                  {group.group}
+                </span>
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive =
+                    pathname === item.href ||
+                    (item.href !== "/admin" && pathname.startsWith(item.href));
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition-colors",
+                        isActive
+                          ? "bg-red-600/10 text-red-400 font-bold border border-red-500/20"
+                          : "text-text-secondary hover:text-text-primary hover:bg-surface-raised"
+                      )}
+                    >
+                      <Icon
+                        className={cn(
+                          "h-4 w-4",
+                          isActive ? "text-red-500" : "text-text-muted"
+                        )}
+                      />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
           </nav>
         </div>
 
-        <div className="border-t border-border pt-4 mt-4 space-y-2">
+        <div className="border-t border-border pt-3 mt-3 space-y-2">
           <Link
             href="/"
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-raised text-xs font-medium transition-colors"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-raised text-xs font-semibold transition-colors"
           >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Public Platform</span>
+            <ArrowLeft className="h-4 w-4 text-text-muted" />
+            <span>Back to Platform</span>
           </Link>
         </div>
       </aside>

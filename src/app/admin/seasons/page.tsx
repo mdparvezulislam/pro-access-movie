@@ -1,16 +1,15 @@
 import { requireAdminAuth } from "@/features/auth/lib/auth-helpers";
-import { AdminPageShell } from "@/components/admin/admin-page-shell";
-import { Layers } from "lucide-react";
+import { SeasonsManager } from "@/components/admin/seasons/SeasonsManager";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Seasons Management | Admin Studio | PRO ACCESS MOVIE",
+};
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminSeasonsPage() {
   await requireAdminAuth("/admin/seasons");
 
-  return (
-    <AdminPageShell
-      title="Seasons"
-      description="Organize series into seasons, sequence numbers, and release schedules."
-      icon={Layers}
-      actionLabel="Add Season"
-    />
-  );
+  return <SeasonsManager />;
 }

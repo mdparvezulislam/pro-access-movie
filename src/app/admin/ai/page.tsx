@@ -1,21 +1,15 @@
-import React from "react";
 import { requireAdminAuth } from "@/features/auth/lib/auth-helpers";
-import { AIStudioOverview } from "@/components/admin/ai/AIStudioOverview";
-import { AdminAiWorkspaceClient } from "@/components/admin/ai/AdminAiWorkspaceClient";
+import { AIEnrichmentManager } from "@/components/admin/ai/AIEnrichmentManager";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AI Content Intelligence Workspace | Admin | PRO ACCESS MOVIE",
-  description: "OpenRouter AI Content Intelligence gateway, metadata assistant, analytics, and usage logs.",
+  title: "AI Enrichment Hub | Admin Studio | PRO ACCESS MOVIE",
 };
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminAIPage() {
   await requireAdminAuth("/admin/ai");
 
-  return (
-    <div className="p-6 md:p-8 space-y-8">
-      <AdminAiWorkspaceClient />
-      <AIStudioOverview />
-    </div>
-  );
+  return <AIEnrichmentManager />;
 }

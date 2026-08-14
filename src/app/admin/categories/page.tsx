@@ -1,16 +1,15 @@
 import { requireAdminAuth } from "@/features/auth/lib/auth-helpers";
-import { AdminPageShell } from "@/components/admin/admin-page-shell";
-import { Grid } from "lucide-react";
+import { CategoriesManager } from "@/components/admin/categories/CategoriesManager";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Categories Management | Admin Studio | PRO ACCESS MOVIE",
+};
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminCategoriesPage() {
   await requireAdminAuth("/admin/categories");
 
-  return (
-    <AdminPageShell
-      title="Categories"
-      description="Manage top-level content classification hierarchy (Movies, Web Series, Documentaries)."
-      icon={Grid}
-      actionLabel="Add Category"
-    />
-  );
+  return <CategoriesManager />;
 }

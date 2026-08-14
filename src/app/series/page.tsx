@@ -6,6 +6,8 @@ import { getPublishedSeries } from "@/lib/content/series";
 import { DEMO_GENRES } from "@/lib/content/catalog-fallback";
 import { Tv, Filter } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function SeriesPage() {
   const seriesList = await getPublishedSeries({ limit: 36 });
 

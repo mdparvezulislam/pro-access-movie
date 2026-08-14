@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   description: "Manage TV series, web series, seasons, and episode content.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminSeriesPage() {
   await requireAdminAuth("/admin/series");
 

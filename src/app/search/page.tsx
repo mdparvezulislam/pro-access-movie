@@ -7,6 +7,8 @@ import { DEMO_GENRES, DEMO_MOVIES, DEMO_SERIES } from "@/lib/content/catalog-fal
 import { Search, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
+export const dynamic = "force-dynamic";
+
 export default async function SearchPage({
   searchParams,
 }: {

@@ -6,6 +6,8 @@ import { getPublishedMovies } from "@/lib/content/movies";
 import { DEMO_GENRES } from "@/lib/content/catalog-fallback";
 import { Film, Filter } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function MoviesPage() {
   const movies = await getPublishedMovies({ limit: 36 });
 

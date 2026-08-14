@@ -1,5 +1,4 @@
 import { AlertTriangle, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface ErrorStateProps {
   title?: string;
@@ -26,10 +25,14 @@ export function ErrorState({
 
       {onRetry && (
         <div className="pt-2">
-          <Button variant="cinematic" size="sm" onClick={onRetry} className="gap-2">
+          <button
+            type="button"
+            onClick={onRetry}
+            className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs inline-flex items-center gap-2 transition shadow-lg cursor-pointer"
+          >
             <RefreshCw className="h-4 w-4" />
             <span>Try Again</span>
-          </Button>
+          </button>
         </div>
       )}
     </div>

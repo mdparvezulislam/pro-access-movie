@@ -11,8 +11,9 @@ export default function RootError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log unexpected errors securely without leaking details to browser users
-    console.error("[PRO ACCESS MOVIE] Application boundary caught error:", error.message);
+    if (error?.message) {
+      console.error("[PRO ACCESS MOVIE] Application boundary caught error:", error.message);
+    }
   }, [error]);
 
   return (

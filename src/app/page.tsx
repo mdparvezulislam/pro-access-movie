@@ -15,6 +15,8 @@ import { getContinueWatching } from "@/features/user/lib/history";
 import { evaluateAd } from "@/lib/ads/ad-engine";
 import { AdBanner } from "@/components/ads/ad-banner";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const [movies, seriesList, continueWatching, adResult] = await Promise.all([
     getPublishedMovies({ limit: 30 }),

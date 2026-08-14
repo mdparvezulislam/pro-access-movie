@@ -5,7 +5,6 @@ import { env } from "@/lib/env";
 import { AIOperation, AIResponsePayload } from "@/types/ai";
 
 const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
-const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || "google/gemini-2.5-flash";
 
 export interface CallOpenRouterParams<T> {
   operation: AIOperation;
@@ -14,7 +13,7 @@ export interface CallOpenRouterParams<T> {
   schema: z.ZodType<T>;
   userId?: string;
   contentId?: string;
-  contentType?: "movie" | "series" | "episode";
+  contentType?: "movie" | "series" | "season" | "episode";
   fallbackData?: T;
 }
 
@@ -29,10 +28,10 @@ export async function callOpenRouter<T>({
   fallbackData,
 }: CallOpenRouterParams<T>): Promise<AIResponsePayload<T>> {
   const startTime = Date.now();
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  const model = DEFAULT_MODEL;
+  const apiKey = process.env.OPENROUTER_API_KEY || env.OPENROUTER_API_KEY;
+  const configuredModel = process.env.OPENROUTER_MODEL || env.OPENROUTER_MODEL || "google/gemini-2.5-flash";
 
-  // If no OpenRouter API key configured, use intelligent mock fallback
+  // If no OpenRouter API key configured, use intelligent mock fallback safely
   if (!apiKey || apiKey.trim().length === 0 || apiKey.includes("placeholder")) {
     const latencyMs = Date.now() - startTime;
     if (!fallbackData) {
@@ -42,7 +41,7 @@ export async function callOpenRouter<T>({
     await logAIUsage({
       userId,
       operation,
-      model: `${model} (demo-fallback)`,
+      model: `${configuredModel} (demo-fallback)`,
       contentId,
       contentType,
       status: "success",
@@ -55,7 +54,7 @@ export async function callOpenRouter<T>({
     return {
       success: true,
       operation,
-      model: `${model} (demo-fallback)`,
+      model: `${configuredModel} (demo-fallback)`,
       data: fallbackData,
       usage: { promptTokens: 120, completionTokens: 180, totalTokens: 300 },
       latencyMs,
@@ -63,135 +62,164 @@ export async function callOpenRouter<T>({
     };
   }
 
-  try {
-    const response = await fetch(OPENROUTER_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey.trim()}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://proaccessmovie.bd",
-        "X-Title": "PRO ACCESS MOVIE AI Intelligence",
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        temperature: 0.3,
-        response_format: { type: "json_object" },
-      }),
-      signal: AbortSignal.timeout(30000), // 30s timeout
-    });
+  // Attempt API call with up to 1 automatic retry on JSON / rate-limit failure
+  let lastErrorMsg = "";
+  const maxAttempts = 2;
 
-    const latencyMs = Date.now() - startTime;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await fetch(OPENROUTER_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey.trim()}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://proaccessmovie.bd",
+          "X-Title": "PRO ACCESS MOVIE AI Intelligence",
+        },
+        body: JSON.stringify({
+          model: configuredModel,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          temperature: 0.3,
+          response_format: { type: "json_object" },
+        }),
+        signal: AbortSignal.timeout(30000), // 30s timeout
+      });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      let errorMsg = `OpenRouter HTTP ${response.status}: ${response.statusText}`;
+      const latencyMs = Date.now() - startTime;
+
+      if (!response.ok) {
+        const errText = await response.text();
+        let errorMsg = `OpenRouter HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errJson = JSON.parse(errText);
+          if (errJson.error?.message) errorMsg = errJson.error.message;
+        } catch {}
+
+        lastErrorMsg = errorMsg;
+
+        // If rate limited or server error, wait briefly before retrying attempt 2
+        if (attempt < maxAttempts && (response.status === 429 || response.status >= 500)) {
+          await new Promise((r) => setTimeout(r, 1000));
+          continue;
+        }
+
+        await logAIUsage({
+          userId,
+          operation,
+          model: configuredModel,
+          contentId,
+          contentType,
+          status: "failed",
+          promptTokens: 0,
+          completionTokens: 0,
+          totalTokens: 0,
+          latencyMs,
+          errorMessage: errorMsg,
+        });
+
+        if (fallbackData) {
+          return {
+            success: true,
+            operation,
+            model: `${configuredModel} (fallback)`,
+            data: fallbackData,
+            usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+            latencyMs,
+            isMockFallback: true,
+          };
+        }
+
+        throw new Error(errorMsg);
+      }
+
+      const payload = await response.json();
+      const rawContent = payload.choices?.[0]?.message?.content || "";
+      const promptTokens = payload.usage?.prompt_tokens || 0;
+      const completionTokens = payload.usage?.completion_tokens || 0;
+      const totalTokens = payload.usage?.total_tokens || promptTokens + completionTokens;
+
+      // Clean potential markdown fencing ```json ... ```
+      let cleanJson = rawContent.trim();
+      if (cleanJson.startsWith("```")) {
+        cleanJson = cleanJson.replace(/^```(json)?\n?/, "").replace(/\n?```$/, "");
+      }
+
+      let parsedJson: unknown;
       try {
-        const errJson = JSON.parse(errText);
-        if (errJson.error?.message) errorMsg = errJson.error.message;
-      } catch {}
+        parsedJson = JSON.parse(cleanJson);
+      } catch (parseErr) {
+        if (attempt < maxAttempts) {
+          lastErrorMsg = "Malformed JSON returned from AI model.";
+          continue;
+        }
+        throw parseErr;
+      }
+
+      const validatedData = schema.parse(parsedJson);
 
       await logAIUsage({
         userId,
         operation,
-        model,
+        model: configuredModel,
         contentId,
         contentType,
-        status: "failed",
-        promptTokens: 0,
-        completionTokens: 0,
-        totalTokens: 0,
+        status: "success",
+        promptTokens,
+        completionTokens,
+        totalTokens,
         latencyMs,
-        errorMessage: errorMsg,
       });
 
-      if (fallbackData) {
-        return {
-          success: true,
-          operation,
-          model: `${model} (fallback)`,
-          data: fallbackData,
-          usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-          latencyMs,
-          isMockFallback: true,
-        };
-      }
-
-      throw new Error(errorMsg);
-    }
-
-    const payload = await response.json();
-    const rawContent = payload.choices?.[0]?.message?.content || "";
-    const promptTokens = payload.usage?.prompt_tokens || 0;
-    const completionTokens = payload.usage?.completion_tokens || 0;
-    const totalTokens = payload.usage?.total_tokens || promptTokens + completionTokens;
-
-    // Clean potential markdown fencing ```json ... ```
-    let cleanJson = rawContent.trim();
-    if (cleanJson.startsWith("```")) {
-      cleanJson = cleanJson.replace(/^```(json)?\n?/, "").replace(/\n?```$/, "");
-    }
-
-    const parsedJson = JSON.parse(cleanJson);
-    const validatedData = schema.parse(parsedJson);
-
-    await logAIUsage({
-      userId,
-      operation,
-      model,
-      contentId,
-      contentType,
-      status: "success",
-      promptTokens,
-      completionTokens,
-      totalTokens,
-      latencyMs,
-    });
-
-    return {
-      success: true,
-      operation,
-      model,
-      data: validatedData,
-      usage: { promptTokens, completionTokens, totalTokens },
-      latencyMs,
-      isMockFallback: false,
-    };
-  } catch (err: unknown) {
-    const latencyMs = Date.now() - startTime;
-    const errorMessage = err instanceof Error ? err.message : "Failed to execute OpenRouter AI request.";
-
-    await logAIUsage({
-      userId,
-      operation,
-      model,
-      contentId,
-      contentType,
-      status: "failed",
-      promptTokens: 0,
-      completionTokens: 0,
-      totalTokens: 0,
-      latencyMs,
-      errorMessage,
-    });
-
-    if (fallbackData) {
       return {
         success: true,
         operation,
-        model: `${model} (fallback)`,
-        data: fallbackData,
-        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+        model: configuredModel,
+        data: validatedData,
+        usage: { promptTokens, completionTokens, totalTokens },
         latencyMs,
-        isMockFallback: true,
+        isMockFallback: false,
       };
+    } catch (err: unknown) {
+      lastErrorMsg = err instanceof Error ? err.message : "Failed to execute OpenRouter AI request.";
+      if (attempt < maxAttempts) {
+        await new Promise((r) => setTimeout(r, 800));
+        continue;
+      }
     }
-
-    throw new Error(`AI Generation Failed: ${errorMessage}`);
   }
+
+  // All attempts failed
+  const latencyMs = Date.now() - startTime;
+  await logAIUsage({
+    userId,
+    operation,
+    model: configuredModel,
+    contentId,
+    contentType,
+    status: "failed",
+    promptTokens: 0,
+    completionTokens: 0,
+    totalTokens: 0,
+    latencyMs,
+    errorMessage: lastErrorMsg,
+  });
+
+  if (fallbackData) {
+    return {
+      success: true,
+      operation,
+      model: `${configuredModel} (fallback)`,
+      data: fallbackData,
+      usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+      latencyMs,
+      isMockFallback: true,
+    };
+  }
+
+  throw new Error(`AI Service is temporarily unavailable. (${lastErrorMsg})`);
 }
 
 async function logAIUsage(params: {
@@ -199,7 +227,7 @@ async function logAIUsage(params: {
   operation: AIOperation;
   model: string;
   contentId?: string;
-  contentType?: "movie" | "series" | "episode";
+  contentType?: "movie" | "series" | "season" | "episode";
   status: "success" | "failed";
   promptTokens: number;
   completionTokens: number;
@@ -210,6 +238,7 @@ async function logAIUsage(params: {
   try {
     const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !serviceKey) return;
     const supabase = createClient(supabaseUrl, serviceKey);
 
     await supabase.from("ai_usage_logs").insert({
@@ -226,6 +255,6 @@ async function logAIUsage(params: {
       error_message: params.errorMessage || null,
     });
   } catch (err) {
-    console.warn("Notice: Failed to insert AI usage log:", err);
+    console.warn("Notice: Failed to log AI usage:", err);
   }
 }

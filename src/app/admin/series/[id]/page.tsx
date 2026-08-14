@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   description: "TV Series, Season, and Episode management workspace.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminEditSeriesPage({
   params,
 }: {

@@ -2,8 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkIsAdmin, getCurrentUser } from "@/features/auth/lib/auth-helpers";
 import {
   generateAIDescription,
+  improveAIDescription,
   generateAISeoMetadata,
   suggestAIClassification,
+  cleanAIText,
+  translateAIText,
+  generateAIEpisodeSummary,
+  generateAISeasonSummary,
   enhanceAIText,
 } from "@/lib/ai/operations";
 import { AIRequestParams } from "@/types/ai";
@@ -35,11 +40,26 @@ export async function POST(request: NextRequest) {
       case "localize_bengali":
         result = await generateAIDescription(params);
         break;
+      case "improve_description":
+        result = await improveAIDescription(params);
+        break;
       case "generate_seo":
         result = await generateAISeoMetadata(params);
         break;
       case "suggest_classification":
         result = await suggestAIClassification(params);
+        break;
+      case "clean_content":
+        result = await cleanAIText(params);
+        break;
+      case "translate":
+        result = await translateAIText(params);
+        break;
+      case "generate_episode_summary":
+        result = await generateAIEpisodeSummary(params);
+        break;
+      case "generate_season_summary":
+        result = await generateAISeasonSummary(params);
         break;
       case "enhance_text":
         result = await enhanceAIText(params);
@@ -54,7 +74,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
   } catch (err: unknown) {
     console.error("Error in AI generate API route:", err);
-    const msg = err instanceof Error ? err.message : "Failed to execute AI operation.";
+    const msg = err instanceof Error ? err.message : "AI Service is temporarily unavailable.";
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
